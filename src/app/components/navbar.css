@@ -1,0 +1,58 @@
+@font-face {
+    font-family: K2D;
+    src: url('/K2D-Regular.ttf');
+}
+@font-face {
+    font-family: Julee;
+    src: url('/Julee-Regular.ttf');
+}
+@font-face {
+    font-family: MarryWeatherSans;
+    src: url('/MerriweatherSans-Bold.ttf');
+}
+
+.navbar .navDiv {
+    border-bottom: 2px solid #F5762E;
+    background-color: #FCFCFF;
+}
+.navbar .navDiv h3 {
+    font-family: K2D;
+    font-size: 2vw;
+    line-height: 36px;
+    letter-spacing: .2em;
+    text-align: left;
+}
+.navbar .navDiv h3 span {
+    font-family: Julee;
+    color: #F5762E;
+    font-size: 2.5vw;
+    line-height: 36px;
+    letter-spacing: 0em;
+    text-align: left;
+}
+.navbar .navDiv .buttonGroup {
+    box-shadow: inset -1px 2px 2px 0px #00000025;
+    background-color: #DFDFDF;
+    border: 1px solid #EDEDED;
+    border-radius: 5rem;
+
+}
+.navbar .navDiv .buttonGroup button {
+    font-family: MarryWeatherSans;
+    text-transform: uppercase;
+    line-height: normal;
+    letter-spacing: 0em;
+    text-align: center;
+    font-size: 0.6vw;
+    color: #1C274C;
+    height: fit-content;
+    min-width: 4.5vw;
+}
+.navbar .navDiv .buttonGroup button.active {
+    background-color: #F5762E;
+    color: white;
+    padding: 0.3rem 1rem;
+    margin-block: .3rem;
+    border-radius: 5rem;
+    box-shadow: 2px 2px 3px 0px #00000025;
+}
