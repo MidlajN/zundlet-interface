@@ -1,5 +1,6 @@
 import React from "react";
-import './components.css'
+import './components.css';
+
 export default function NavBar() {
   return (
     <nav className="navbar h-[9%]">

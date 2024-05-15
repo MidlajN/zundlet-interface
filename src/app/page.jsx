@@ -3,6 +3,7 @@ import React from "react";
 import NavBar from "./components/navbar";
 import Sidebar, { SidebarItem } from "./components/sidebar";
 import { Boxes, CaseSensitiveIcon, CloudUpload, MousePointer2Icon, PenLine, PenTool, Spline } from "lucide-react";
+import Container from "./components/container";
 
 export default function Home() {
   return (
@@ -21,6 +22,9 @@ export default function Home() {
             <SidebarItem icon={ <CloudUpload size={25} strokeWidth={1.5} /> } text={'Pen'} type={ 'rotateCW' } />
           </Sidebar>
 
+          <Container>
+            <p>New</p>
+          </Container>
         </div>
       </section>
     </>
