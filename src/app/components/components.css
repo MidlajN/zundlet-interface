@@ -69,8 +69,16 @@
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    width: 80%;
     height: 100%;
+}
+.canvas-section .canvas button {
+    position: absolute;
+    inset-inline: auto;
+    right: 0;
+    /* background-color: #F5762E; */
+    color: white;
+    /* padding: 0.3rem 1rem; */
+    margin-block: .3rem;
 }
 .canvas-section .canvas .machine-outer {
     padding: 25px 23px 0px 23px;
@@ -99,4 +107,16 @@
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center;
+}
+
+
+.canvas-section .footer {
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    font-size: 13px;
+}
+.canvas-section .footer div {
+    min-width: 6rem;
 }
