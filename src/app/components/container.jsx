@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { handleFile, handleKeyDown } from "./canvasFunctions";
 import './components.css';
 
 export default function Container({ children, expanded, setExpanded }) {
     const canvasRef = useRef(null);
+    const [copiedObject, setCopiedObject] = useState(null);
     const [ objectValues, setObjectValues ] = useState({ x: 0, y: 0, scaleX: 1, scaleY: 1, rotateAngle: 0, pathOffset: { x: 0, y: 0 } });
 
     useEffect(() => {
@@ -52,22 +54,12 @@ export default function Container({ children, expanded, setExpanded }) {
         }
     }, [objectValues])
 
-    const handleFile = (file) => {
-        if (file.type !== 'image/svg+xml') return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const svg = e.target.result;
-
-            fabric.loadSVGFromString(svg, (objects, options) => {
-                const obj = fabric.util.groupSVGElements(objects, options);
-                obj.set({ selectable: true, hasControls: true });
-                canvas.add(obj);
-                canvas.renderAll();
-            })
-        }
-        reader.readAsText(file);
-    }
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeyDown( copiedObject, setCopiedObject ));
+        return () => { 
+            window.removeEventListener('keydown', handleKeyDown) 
+        };
+    }, [copiedObject]);
 
     return (
         <section className="h-full w-full flex canvas-section relative ">

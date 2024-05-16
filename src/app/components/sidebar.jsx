@@ -8,7 +8,7 @@ export default function Sidebar({ children }) {
   )
 }
 
-export function SidebarItem({ icon, text, setTool, expanded, setExpanded }) {
+export function SidebarItem({ icon, text, setTool, setExpanded, canvasFunction }) {
     
     return (
         <li
@@ -19,15 +19,21 @@ export function SidebarItem({ icon, text, setTool, expanded, setExpanded }) {
                 }
             `}
             onClick={ () => {
-                const exceptions = ['Group', 'Split', 'Lines', 'Curves'];
+                const expandTool = ['Group', 'Split'];
+                const simpleTool = ['Lines', 'Curves'];
 
-                if (exceptions.includes(text)) {
-                    setTool(null);
+                if (expandTool.includes(text)) {
+                    // setTool(null);
+                    // setExpanded(true);
+                } else if (simpleTool.includes(text)) {
+                    // setTool(text);
                     setExpanded(false);
                 } else {
                     setTool(text);
-                    setExpanded(true);
-                }  
+                    setExpanded(true)
+                }
+                
+                if (canvasFunction) canvasFunction();
             }}
         >
             {icon}
