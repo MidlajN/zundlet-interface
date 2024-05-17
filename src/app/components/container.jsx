@@ -18,7 +18,9 @@ export default function Container({ children, expanded, setExpanded }) {
         const canvas = new fabric.Canvas(canvasRef.current, {
             width: 800,
             height: 500,
-            backgroundColor: "white"
+            backgroundColor: "white",
+            fireRightClick: true,
+            stopContextMenu: true
         });
         window.canvas = canvas;
 

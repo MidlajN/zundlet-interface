@@ -1,5 +1,5 @@
-import { CloudUpload, Files, ArrowUpNarrowWide, ArrowDownNarrowWide, Trash2 } from "lucide-react";
-import React from "react";
+import { CloudUpload, Files, ArrowUpNarrowWide, ArrowDownNarrowWide, Trash2, Settings2, FlipHorizontal2, FlipVertical2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import './components.css'
 
 export function Default() {
@@ -26,7 +26,7 @@ export function TextBox() {
     )
 }
 
-export function Import() {Up
+export function Import() {
     const handleFile = (file) => {
         if (file.type !== 'image/svg+xml') return;
 
@@ -62,19 +62,56 @@ export function Import() {Up
 }
 
 export function Setup() {
+    const [rightClickEvent, setRightClickEvent] = useState(null);
+    
+    useEffect(() => {
+        canvas.on('mouse:down', (e) => {
+            const handleRightClick = (event) => { if (event.button === 3) setRightClickEvent(event); }
+            
+            const activeObject = canvas.getActiveObject();
+            
+            if (activeObject) { 
+                console.log('active Ovject :: ', activeObject)
+                activeObject.on('mousedown', handleRightClick); 
+            } 
+
+            setRightClickEvent(null);
+            return () => {
+                if (activeObject) {
+                    activeObject.off('mousedown');
+                }
+            }
+        })
+    },[])
+     
     return (
         <div className="w-full h-full p-2">
+            { rightClickEvent && <CustomComponent event={rightClickEvent} />}
             <div className="border-b-2 border-[#1c274c1c] py-1">
                 <h3>Machine Configuration</h3>
             </div>
             <div className="mt-4 h-[50%] bg-[#EBEBEB]">
                 <div className="w-full bg-[#081646ab] flex items-end justify-end gap-3 p-3">
-                    <ArrowDownNarrowWide size={25} strokeWidth={1.5} color={'#ffffff'} />
-                    <ArrowUpNarrowWide size={25} strokeWidth={1.5} color={'#ffffff'} />
-                    <Trash2 size={25} strokeWidth={1.5} color={'#ffffff'} />
-                    <Files size={25} strokeWidth={1.5} color={'#ffffff'} />
+                    <ArrowDownNarrowWide size={20} strokeWidth={1.3} color={'#ffffff'} />
+                    <ArrowUpNarrowWide size={20} strokeWidth={1.3} color={'#ffffff'} />
+                    <Trash2 size={20} strokeWidth={1.3} color={'#ffffff'} />
+                    <Files size={20} strokeWidth={1.3} color={'#ffffff'} />
                 </div>
             </div>
         </div>
     )
 }
+
+const CustomComponent = ({ event }) => {
+    // You can access event properties such as event.clientX, event.clientY here
+    return (
+        <div className="contextMenu" style={{ top: event.e.clientY , left: event.e.clientX }}>
+            <ul>
+                <li><Settings2 size={14} /> Change Function</li>
+                <li><Trash2 size={14} /> Delete</li>
+                {/* <li><FlipHorizontal2 size={14} /> Flip X</li>
+                <li><FlipVertical2 size={14} /> Flip Y</li> */}
+            </ul>
+        </div>
+    );
+};
