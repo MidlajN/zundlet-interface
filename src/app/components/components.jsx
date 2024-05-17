@@ -1,5 +1,8 @@
 import { CloudUpload, Files, ArrowUpNarrowWide, ArrowDownNarrowWide, Trash2, Settings2, Plus, X, ChevronsDown} from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { deleteObject } from "./canvasFunctions";
+
+
 import ReactModal from "react-modal";
 ReactModal.setAppElement('#main');
 import './components.css'
@@ -77,6 +80,11 @@ export function Setup() {
             
             if (activeObject) { 
                 console.log('active Ovject :: ', activeObject)
+                activeObject.set({
+                    hasControls: false,
+                    lockMovementX: true,
+                    lockMovementY: true
+                })
                 activeObject.on('mousedown', handleRightClick); 
             } 
 
@@ -92,7 +100,7 @@ export function Setup() {
     return (
         <>
             <div className="w-full h-full p-2">
-                { rightClickEvent && <CustomComponent event={rightClickEvent} />}
+                { rightClickEvent && <CustomComponent event={rightClickEvent} setEvent={setRightClickEvent} setModalOpen={setModalOpen} />}
                 <div className="border-b-2 border-[#1c274c1c] py-1">
                     <h3>Machine Configuration</h3>
                 </div>
@@ -133,16 +141,16 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
     const thruCut = () => {
         return (
             <div>
-                <div className="flex items-end gap-8 mb-4">
+                <div className="flex items-end justify-between mb-4">
                     <p className="text-sm">Material Thickness : </p>
-                    <div className="flex gap-1 w-full">
+                    <div className="flex gap-1 w-[50%]">
                         <input className="w-full outline-none text-end px-2 text-xs" type="text" />
                         <p>mm</p>
                     </div>
                 </div>
-                <div className="flex items-end gap-8">
+                <div className="flex items-end justify-between">
                     <p className="text-sm">Z Offset : </p>
-                    <div className="flex gap-1 w-full">
+                    <div className="flex gap-1 w-[50%]">
                         <input className="w-full outline-none text-end px-2 text-xs" type="text" />
                         <p>mm</p>
                     </div>
@@ -154,43 +162,43 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
     const router = () => {
         return (
             <div>
-                <div className="flex items-end gap-12 mb-4">
+                <div className="flex items-end justify-between gap-12 mb-4">
                     <p className="text-sm">Material Thickness : </p>
-                    <div className="flex gap-1 w-full">
+                    <div className="flex gap-1 w-[40%]">
                         <input className="w-full outline-none text-end px-2 text-xs" type="text" />
                         <p>mm</p>
                     </div>
                 </div>
-                <div className="flex items-end gap-8 mb-4">
+                <div className="flex items-end justify-between gap-8 mb-4">
                     <p className="text-sm">Clearing Distance : </p>
-                    <div className="flex gap-1 w-full">
+                    <div className="flex gap-1 w-[40%]">
                         <input className="w-full outline-none text-end px-2 text-xs" type="text" />
                         <p>mm</p>
                     </div>
                 </div>
-                <div className="flex items-end gap-8 mb-4">
+                <div className="flex items-end justify-between gap-8 mb-4">
                     <p className="text-sm">Maximum Depth in Multipass : </p>
-                    <div className="flex gap-1 w-full">
+                    <div className="flex gap-1 w-[40%]">
                         <input className="w-full outline-none text-end px-2 text-xs" type="text" />
                         <p>mm</p>
                     </div>
                 </div>
-                <div className="flex items-end gap-8 mb-4">
+                <div className="flex items-end justify-between gap-8 mb-4">
                     <p className="text-sm">Multipass Last Pass Depth : </p>
-                    <div className="flex gap-1 w-full">
+                    <div className="flex gap-1 w-[40%]">
                         <input className="w-full outline-none text-end px-2 text-xs" type="text" />
                         <p>mm</p>
                     </div>
                 </div>
-                <div className="flex gap-8">
-                    <div className="flex items-end gap-2 mb-4">
+                <div className="flex justify-between">
+                    <div className="flex items-end justify-between gap-2 mb-4">
                         <p className="text-sm">Router Speed : </p>
                         <div className="flex gap-1 w-full">
                             <input className="w-full outline-none text-end px-2 text-xs" type="text" />
                             <p>mm/s</p>
                         </div>
                     </div>
-                    <div className="flex items-end gap-1 mb-4">
+                    <div className="flex items-end justify-between gap-1 mb-4 w-[40%]">
                         <p className="text-sm">Offset Side: </p>
                         <select className="w-full outline-none border-bg-gray-300 min-w-[7rem]">
                             <option value="inside">Inside</option>
@@ -221,7 +229,7 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
                     transform: 'translate(-50%, -50%)',
                     padding: '0px',
                     border: 'none',
-                    width: '40rem',
+                    width: '50rem',
                     borderRadius: 'none',
                     background: 'transparent'
                 } 
@@ -270,6 +278,10 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
                             </div>
                         </div>
                     </div>
+                    <div className="flex justify-end gap-4 mt-10">
+                        <button className="transition-all duration-300 bg-[#2a365c] hover:bg-[#1C274C] px-8 py-[2px] text-white">Apply</button>
+                        <button className="transition-all duration-300 bg-[#23325cbb] hover:bg-[#1C274C] px-8 py-[2px] text-white">Cancel</button>
+                    </div>
                 </div>
             </div>
         </ReactModal>
@@ -278,16 +290,21 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
 
 
 
-const CustomComponent = ({ event }) => {
+const CustomComponent = ({ event, setEvent, setModalOpen }) => {
+
+    const deleteElement = () => {
+        deleteObject();
+        setEvent(null);
+    }
 
     // You can access event properties such as event.clientX, event.clientY here
     return (
-        <div className="contextMenu" style={{ top: event.e.clientY , left: event.e.clientX }}>
+        <div className="contextMenu" style={{ top: event.e.clientY - 80 , left: event.e.clientX }}>
             <ul>
                 <li className="hover:bg-gray-100">
                     <Settings2 size={14} /> 
                     <button aria-haspopup="true" aria-controls="menu-lang" class="w-full text-left flex items-center outline-none focus:outline-none">
-                        <span class="pr-1 flex-1">Langauges</span>
+                        <span class="pr-1 flex-1">Change Function</span>
                         <span class="mr-auto">
                             <svg class="fill-current h-4 w-4 transition duration-150 ease-in-out" viewBox="0 0 20 20" >
                                 <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
@@ -296,12 +313,10 @@ const CustomComponent = ({ event }) => {
                     </button>
 
                     <ul id="menu-lang" aria-hidden="true" class="absolute top-0 right-0 transition duration-150 ease-in-out origin-top-left min-w-32">
-                        <li class="px-3 py-1 hover:bg-gray-100">Javascript</li>
-                        <li class="px-3 py-1 hover:bg-gray-100">Go</li>
-                        <li class="px-3 py-1 hover:bg-gray-100">Rust</li>
+                        <li class="px-3 py-1 hover:bg-gray-100" onClick={() => { setModalOpen(true) }}>Register Job</li>
                     </ul>
                 </li>
-                <li className="hover:bg-gray-100"><Trash2 size={14} /> Delete</li>
+                <li className="hover:bg-gray-100" onClick={deleteElement}><Trash2 size={14} /> Delete</li>
             </ul>
         </div>
     );

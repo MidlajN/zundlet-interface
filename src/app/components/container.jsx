@@ -9,6 +9,7 @@ export default function Container({ children, expanded, setExpanded }) {
     const [copiedObject, setCopiedObject] = useState(null);
     const [ objectValues, setObjectValues ] = useState({ x: 0, y: 0, scaleX: 1, scaleY: 1, rotateAngle: 0, pathOffset: { x: 0, y: 0 } });
 
+
     useEffect(() => {
         fabric.Object.prototype.cornerStyle = 'circle';
         fabric.Object.prototype.cornerColor = '#7f77eb85';
@@ -42,6 +43,7 @@ export default function Container({ children, expanded, setExpanded }) {
         return () => canvas.dispose();
     }, []);
 
+
     useEffect(() => {
         const activeObject = canvas.getActiveObject();
         if (activeObject) {
@@ -56,6 +58,7 @@ export default function Container({ children, expanded, setExpanded }) {
         }
     }, [objectValues])
 
+    
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown( copiedObject, setCopiedObject ));
         return () => { 

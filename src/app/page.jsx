@@ -35,11 +35,6 @@ export default function Home() {
                   setTool('Setup');
                   setExpanded(true);
                   setHideSideBar(true);
-                  canvas.getObjects().forEach((obj) => obj.set({
-                    hasControls: false,
-                    lockMovementX: true,
-                    lockMovementY: true
-                  }));
                 }}
               > Setup </button>
               <button>Cut</button>
