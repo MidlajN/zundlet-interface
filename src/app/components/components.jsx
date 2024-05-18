@@ -1,5 +1,5 @@
-import { CloudUpload, Files, ArrowUpNarrowWide, ArrowDownNarrowWide, Trash2, Settings2, Plus, X, ChevronsDown} from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { CloudUpload, Files, ArrowUpNarrowWide, ArrowDownNarrowWide, Trash2, Settings2, Plus, X, ChevronsDown, Eye, EyeOff} from "lucide-react";
+import React, { act, useEffect, useState } from "react";
 import { deleteObject } from "./canvasFunctions";
 
 
@@ -70,6 +70,8 @@ export function Setup() {
     const [rightClickEvent, setRightClickEvent] = useState(null);
     const [jobSetUp, setJobSetup] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
+    const [selected, setSelected] = useState(null);
+    const [jobToUpdate, setJobToUpdate] = useState(null)
     
     
     useEffect(() => {
@@ -116,23 +118,106 @@ export function Setup() {
                         <ArrowDownNarrowWide 
                             size={20} 
                             strokeWidth={1.3} 
-                            color={'#ffffff'} />
+                            color={'#ffffff'}
+                            onClick={ () => {
+                                const newSetup = [...jobSetUp];
+                                const targetIndex = selected === newSetup.length - 1 ? 0 : selected + 1;
+
+                                [newSetup[selected], newSetup[targetIndex]] = [newSetup[targetIndex], newSetup[selected]];
+                                setJobSetup(newSetup);
+                                setSelected(selected + 1)
+                            }} />
                         <ArrowUpNarrowWide 
                             size={20} 
                             strokeWidth={1.3} 
-                            color={'#ffffff'} />
+                            color={'#ffffff'}
+                            onClick={ () => {
+                                const newSetup = [...jobSetUp];
+                                const targetIndex = selected === 0? newSetup.length - 1  : selected - 1;
+
+                                [newSetup[selected], newSetup[targetIndex]] = [newSetup[targetIndex], newSetup[selected]];
+                                setJobSetup(newSetup);
+                                setSelected(selected - 1);
+                            }}
+                        />
                         <Trash2 
                             size={20} 
                             strokeWidth={1.3} 
-                            color={'#ffffff'} />
+                            color={'#ffffff'}
+                            onClick={ () => {
+                                setJobSetup(jobSetUp.filter((item, i) => i !== selected));
+                                setSelected(null);
+                            }} />
                         <Files 
                             size={20} 
                             strokeWidth={1.3} 
-                            color={'#ffffff'} />
+                            color={'#ffffff'}
+                            onClick={ () => {
+                                const itemToCopy = jobSetUp.find((item, i) => i === selected);
+                                if (itemToCopy) {
+                                    const newSetup = [...jobSetUp];
+                                    newSetup.splice(selected + 1, 0, itemToCopy);
+                                    setJobSetup(newSetup);
+                                }
+
+                            }} />
+                    </div>
+                    <div>
+                        { jobSetUp.map((item, index) => {
+                            return (
+                                <div key={index} className={ `flex justify-between items-end py-1 px-3 border-b border-b-[#1c274c28] ${ selected === index ? 'bg-[#d6d6d6ab]' : '' }` } onClick={() => setSelected(index)}>
+                                    <p className="font-['MarryWeatherSansRegular'] text-[13px]">{ item.name }</p>
+                                    <div className="flex gap-3 py-1">
+                                        <Settings2 
+                                            size={17} 
+                                            strokeWidth={2} 
+                                            cursor={'pointer'}
+                                            onClick={ () => {
+                                                setModalOpen(true);
+                                                setJobToUpdate(item);
+                                            }} 
+                                            />
+                                        { item.selected ? (
+                                            <Eye 
+                                                size={17} 
+                                                strokeWidth={2} 
+                                                cursor={'pointer'} 
+                                                onClick={ () => {
+                                                    setJobSetup((prevSetup) => 
+                                                        prevSetup.map((item, i) => i === index ? {...item, selected: false} : item)
+                                                    );
+                                                }}
+                                            />
+                                        ) : (
+                                            <EyeOff
+                                                size={17} 
+                                                strokeWidth={2} 
+                                                cursor={'pointer'} 
+                                                onClick={ () => {
+                                                    setJobSetup((prevSetup) => 
+                                                        prevSetup.map((item, i) => i === index ? {...item, selected: true} : item)
+                                                    );
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            )
+                        })}
                     </div>
                 </div>
             </div>
-            { modalOpen && <SetupModal modalOpen={modalOpen} setModalOpen={setModalOpen} setJobSetup={setJobSetup}  /> }
+            { modalOpen && 
+                <SetupModal 
+                    modalOpen={modalOpen} 
+                    setModalOpen={setModalOpen}
+                    jobSetUp={jobSetUp} 
+                    setJobSetup={setJobSetup} 
+                    setRightClickEvent={setRightClickEvent} 
+                    jobToUpdate={jobToUpdate}
+                    setJobToUpdate={setJobToUpdate}
+                /> 
+            }
         </>
     )
 }
@@ -171,33 +256,99 @@ const CustomComponent = ({ event, setEvent, setModalOpen }) => {
 };
 
 
-const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
+const SetupModal = ({modalOpen, setModalOpen, jobSetUp, setJobSetup, setRightClickEvent , jobToUpdate, setJobToUpdate}) => {
     const [ selected, setSelected ] = useState('thru-cut');
     const [ thruCutData, setThruCutData ] = useState({
         name: 1,
-        materialThickness: 0.5,
-        zOffset: 0.1,
-        zLowering: 300,
-        zLowered: 500
+        properties : {
+            materialThickness: 0.5,
+            zOffset: 0.1,
+            zLowering: 300,
+            zLowered: 500
+        }
     })
     const [ routerData, setRouterData ] = useState({
         name: 1,
-        materialThickness: 0.5,
-        clearingDist: 2,
-        maxPassDepth: 2,
-        lastPassDepth: 0.6,
-        routerSpeed: 1200,
-        offset: 'inside',
-        zLowering: 200,
-        zLowered: 400
+        properties: {
+            materialThickness: 0.5,
+            clearingDist: 2,
+            maxPassDepth: 2,
+            lastPassDepth: 0.6,
+            routerSpeed: 1200,
+            offset: 'inside',
+            zLowering: 200,
+            zLowered: 400
+        }
     })
+
+    useEffect(() => {
+        console.log('jobToUpdate', jobToUpdate)
+        if (jobToUpdate) {
+            setSelected(jobToUpdate.type);
+            if (jobToUpdate.type === 'thru-cut') {
+                setThruCutData({name: jobToUpdate.name, properties: jobToUpdate.properties});
+            } else if (jobToUpdate.type === 'router') {
+                setRouterData({name: jobToUpdate.name, properties: jobToUpdate.properties});
+            }
+        }
+    },[jobToUpdate])
 
     const handleChange = (mode, event) => {
         if (mode === 'thru-cut') {
-            setThruCutData((prev) => ({ ...prev, [event.target.name]: event.target.value }));
+            if (event.target.name === 'name') {
+                setThruCutData((prev) => ({ ...prev, name: event.target.value }));
+            } else {
+                setThruCutData((prev) => ({ ...prev, properties: { ...prev.properties, [event.target.name] : event.target.value } }));
+            }
+
         } else if (mode === 'router') {
-            setRouterData((prev) => ({ ...prev, [event.target.name]: event.target.value }));
+            if (event.target.name === 'name') {
+                setRouterData((prev) => ({ ...prev, name: event.target.value }));
+            } else {
+                setRouterData((prev) => ({ ...prev, properties: { ...prev.properties, [event.target.name] : event.target.value } }));
+            }
         }
+    }
+
+    const applySetup = () => {
+        const activeObject = canvas.getActiveObject();
+        console.log('applySetup', jobToUpdate)
+        if (!activeObject && !jobToUpdate) return;
+
+        if (activeObject) {
+            if (activeObject.get('type') === 'activeSelection') {
+                activeObject.forEachObject((obj) => {
+                    obj.set({
+                        stroke: selected === 'thru-cut' ? '#ff0000' : '#0000ff',
+                    })
+                });
+            } else {
+                activeObject.set({
+                    stroke: selected === 'thru-cut' ? '#ff0000' : '#0000ff',
+                })
+            }
+        }
+        canvas.discardActiveObject()
+        canvas.requestRenderAll();
+        const setup = {
+            name: selected === 'thru-cut' ? `Thru-Cut ${thruCutData.name}` : `Router ${routerData.name}`,
+            type: selected === 'thru-cut' ? 'thru-cut' : 'router',
+            objects: activeObject,
+            properties: selected === 'thru-cut' ? thruCutData.properties : routerData.properties, 
+            selected: true
+        }
+        
+        if (jobToUpdate) {
+            console.log('jobToUpdate', jobSetUp)
+            const index = jobSetUp.findIndex((job) => job.name === jobToUpdate.name);
+            jobSetUp[index] = setup;
+            setJobSetup([...jobSetUp]);
+            setJobToUpdate(null);
+        } else {
+            setJobSetup((prevSetup) => [...prevSetup, setup]);
+        }
+        setRightClickEvent(null);
+        setModalOpen(false);
     }
 
     
@@ -211,7 +362,7 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
                             type="text"
                             name="materialThickness"
                             className="w-full outline-none text-end px-2 text-xs" 
-                            value={ thruCutData.materialThickness } 
+                            value={ thruCutData.properties.materialThickness } 
                             onChange={ (e) => handleChange('thru-cut', e) }
                         />
                         <p>mm</p>
@@ -224,7 +375,7 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
                             type="text" 
                             name="zOffset"
                             className="w-full outline-none text-end px-2 text-xs"
-                            value={ thruCutData.zOffset }
+                            value={ thruCutData.properties.zOffset }
                             onChange={ (e) => handleChange('thru-cut', e) }
                         />
                         <p>mm</p>
@@ -244,7 +395,7 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
                             type="text" 
                             name="materialThickness"
                             className="w-full outline-none text-end px-2 text-xs"  
-                            value={ routerData.materialThickness }
+                            value={ routerData.properties.materialThickness }
                             onChange={ (e) => handleChange('router', e) }
                         />
                         <p>mm</p>
@@ -257,7 +408,7 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
                             type="text"
                             name="clearingDist"
                             className="w-full outline-none text-end px-2 text-xs"  
-                            value={ routerData.clearingDist }
+                            value={ routerData.properties.clearingDist }
                             onChange={ (e) => handleChange('router', e) }
                         />
                         <p>mm</p>
@@ -270,7 +421,7 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
                             type="text" 
                             name="maxPassDepth"
                             className="w-full outline-none text-end px-2 text-xs"  
-                            value={ routerData.maxPassDepth }
+                            value={ routerData.properties.maxPassDepth }
                             onChange={ (e) => handleChange('router', e) }
                         />
                         <p>mm</p>
@@ -283,7 +434,7 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
                             type="text" 
                             name="lastPassDepth"
                             className="w-full outline-none text-end px-2 text-xs"  
-                            value={ routerData.lastPassDepth }
+                            value={ routerData.properties.lastPassDepth }
                             onChange={ (e) => handleChange('router', e) }
                         />
                         <p>mm</p>
@@ -297,7 +448,7 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
                                 type="text" 
                                 name="routerSpeed"
                                 className="w-full outline-none text-end px-2 text-xs"  
-                                value={ routerData.routerSpeed }
+                                value={ routerData.properties.routerSpeed }
                                 onChange={ (e) => handleChange('router', e) }
                             />
                             <p>rpm</p>
@@ -308,7 +459,7 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
                         <select
                             name="offset" 
                             className="w-full outline-none border-bg-gray-300 min-w-[7rem]" 
-                            value={ routerData.offset }
+                            value={ routerData.properties.offset }
                             onChange={ (e) => handleChange('router', e) }
                         >
                             <option value="outside">Outside</option>
@@ -385,7 +536,7 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
                                     type="text"
                                     name="zLowered"
                                     className="w-full outline-none text-end px-2 text-xs" 
-                                    value={ selected === 'thru-cut' ? thruCutData.zLowered : routerData.zLowered }
+                                    value={ selected === 'thru-cut' ? thruCutData.properties.zLowered : routerData.properties.zLowered }
                                     onChange={ (e) => handleChange(selected, e) }
                                 />
                                 <p>mm/s</p>
@@ -398,7 +549,7 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
                                     type="text"
                                     name="zLowering"
                                     className="w-full outline-none text-end px-2 text-xs"
-                                    value={ selected === 'thru-cut' ? thruCutData.zLowering : routerData.zLowering }
+                                    value={ selected === 'thru-cut' ? thruCutData.properties.zLowering : routerData.properties.zLowering }
                                     onChange={ (e) => handleChange(selected, e) }
                                 />
                                 <p>mm/s</p>
@@ -406,7 +557,9 @@ const SetupModal = ({modalOpen, setModalOpen, setJobSetup}) => {
                         </div>
                     </div>
                     <div className="flex justify-end gap-4 mt-10">
-                        <button className="transition-all duration-300 bg-[#2a365c] hover:bg-[#1C274C] px-8 py-[2px] text-white">Apply</button>
+                        <button 
+                            className="transition-all duration-300 bg-[#2a365c] hover:bg-[#1C274C] px-8 py-[2px] text-white"
+                            onClick={ applySetup }>Apply</button>
                         <button 
                             className="transition-all duration-300 bg-[#23325cbb] hover:bg-[#1C274C] px-8 py-[2px] text-white"
                             onClick={ () => { setModalOpen(false) } }

@@ -62,7 +62,7 @@ export const split = () => {
                         hasControls: true,
                         fill: 'transparent',
                         stroke: 'black',
-                        strokeWidth: 0.1,
+                        strokeWidth: 0.4,
                     });
                     fabricPaths.push(fabricPath);
                 }

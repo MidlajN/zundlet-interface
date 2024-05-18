@@ -12,6 +12,10 @@
     font-family: MarryWeatherSans;
     src: url('/MerriweatherSans-Bold.ttf');
 }
+@font-face {
+    font-family: MarryWeatherSansRegular;
+    src: url('/MerriweatherSans-Regular.ttf');
+}
 .navbar .navDiv {
     border-bottom: 2px solid #F5762E;
     background-color: #FCFCFF;
