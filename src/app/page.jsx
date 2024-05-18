@@ -3,13 +3,15 @@ import React, { useState } from "react";
 import Sidebar, { SidebarItem } from "./components/sidebar";
 import { Boxes, CaseSensitiveIcon, CloudUpload, Group, MousePointer2Icon, PenLine, PenTool, Spline } from "lucide-react";
 import Container from "./components/container";
-import { Default, Elements, FreeDraw, Import, TextBox, Setup } from "./components/components";
+import { Default, Elements, FreeDraw, Import, TextBox, Setup, Cut } from "./components/components";
 import { split, group, info } from "./components/canvasFunctions";
 
 export default function Home() {
   const [tool, setTool] = useState(null);
   const [ expanded, setExpanded ] = useState(false);
   const [ hideSideBar, setHideSideBar ] = useState(false);
+  const [jobSetUp, setJobSetup] = useState([]);
+
   return (
     <>
       <section className="h-screen">
@@ -37,7 +39,13 @@ export default function Home() {
                   setHideSideBar(true);
                 }}
               > Setup </button>
-              <button>Cut</button>
+              <button
+                onClick={() => {
+                  setExpanded(true);
+                  setHideSideBar(true);
+                  setTool('Cut')
+                }}
+              > Cut </button>
             </div>
           </div>
         </nav>
@@ -52,7 +60,8 @@ export default function Home() {
               { tool === 'Pen' && <FreeDraw /> }
               { tool === 'Textbox' && <TextBox /> }
               { tool === 'Import' && <Import /> }
-              { tool === 'Setup' && <Setup /> }
+              { tool === 'Setup' && <Setup jobSetUp={jobSetUp} setJobSetup={setJobSetup} /> }
+              { tool === 'Cut' && <Cut jobSetUp={jobSetUp} setJobSetup={setJobSetup} /> }
             </div>
           </Container>
         </div>

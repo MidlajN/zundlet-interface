@@ -1,7 +1,26 @@
-import { CloudUpload, Files, ArrowUpNarrowWide, ArrowDownNarrowWide, Trash2, Settings2, Plus, X, ChevronsDown, Eye, EyeOff} from "lucide-react";
 import React, { act, useEffect, useState } from "react";
 import { deleteObject } from "./canvasFunctions";
-
+import { 
+    CloudUpload, 
+    Files, 
+    ArrowUpNarrowWide, 
+    ArrowDownNarrowWide, 
+    Trash2, 
+    Settings2, 
+    Plus, 
+    X, 
+    ChevronsDown, 
+    Eye, 
+    EyeOff,
+    ChevronLeft,
+    ChevronRight,
+    ChevronUp,
+    ChevronDown,
+    Home,
+    Power,
+    Dot,
+    Pause
+} from "lucide-react";
 
 import ReactModal from "react-modal";
 ReactModal.setAppElement('#main');
@@ -66,9 +85,115 @@ export function Import() {
     )
 }
 
-export function Setup() {
+
+export const Cut = ({ jobSetUp, setJobSetup }) => {
+    const [port , setPort] = useState(null);
+    const [writer, setWriter] = useState(null);
+    const [reader, setReader] = useState(null);
+
+    const handleConnection = async () => {
+        try {
+            const newPort = await navigator.serial.requestPort();
+            await newPort.open({ baudRate: 9600 });
+            setPort(newPort);
+            console.log('port', newPort)
+            setWriter(newPort.writable.getWriter());
+            setReader(newPort.readable.getReadable());
+        } catch (err) {
+            console.log("Error while connecting", err)
+        }
+    }
+
+    const closeConnection = async () => {
+        if (port) {
+            await reader.releaseLock();
+            await writer.releaseLock();
+            await port.close();
+            console.log('Port Closed Successfully >>>')
+            setPort(null);
+        }
+    }
+
+
+    return (
+        <div className="flex justify-between flex-col h-full pb-6">
+            <div className="mt-4 p-2 h-[50%] bg-[#EBEBEB]">
+                { jobSetUp.map((item, index) => {
+                    return (
+                        <div key={index} className={ `flex justify-between items-end py-1 px-3 border-b border-b-[#1c274c28] hover:bg-[#d6d6d6ab]` } >
+                            <p className="font-['MarryWeatherSansRegular'] text-[13px]">{ item.name }</p>
+                            <div className="flex gap-3 py-1">
+                                <Trash2 
+                                    size={15} 
+                                    strokeWidth={2} 
+                                    onClick={ () => setJobSetup(jobSetUp.filter((item, i) => i !== index)) }
+                                    cursor={'pointer'}
+                                />
+                            </div>
+                        </div>
+                    )
+                })}
+            </div>
+            <div className="flex flex-col items-center justify-center gap-5">
+                <div className="flex flex-col items-center justify-center gap-3 pb-10">
+                    <button className="p-3 bg-[#1C274C] rounded">
+                        <ChevronUp size={20} strokeWidth={4} color={'#F5762E'}/>
+                    </button>
+                    <div className="flex gap-3">
+                        <button className="p-3 bg-[#1C274C] rounded">
+                            <ChevronLeft size={20} strokeWidth={4} color={'#F5762E'}/>
+                        </button>
+                        <button className="p-3 bg-[#1C274C] rounded">
+                            <Home size={20} strokeWidth={2} color={'#ffffff'}/>
+                        </button>
+                        <button className="p-3 bg-[#1C274C] rounded">
+                            <ChevronRight size={20} strokeWidth={4} color={'#F5762E'}/>
+                        </button>
+                    </div>
+                    <button className="p-3 bg-[#1C274C] rounded">
+                        <ChevronDown size={20} strokeWidth={4} color={'#F5762E'}/>
+                    </button>
+                </div>
+
+                <div className="flex w-full items-end justify-between">
+                    { !port ? (
+                        <button className="flex items-center justify-center gap-1 bg-[#F5762E] py-1 px-8 rounded-full" onClick={ handleConnection }>
+                            <Power size={18} strokeWidth={4} color="#FFFFFF" /> 
+                            <span className="text-[#1C274C] font-['MarryWeatherSans'] text-[13px] "> Connect</span>
+                        </button>
+                    ) : (
+                        <button className="flex items-center justify-center gap-1 bg-[#d41d1d] py-1 px-6 rounded-full" onClick={ closeConnection }>
+                            <Power size={18} strokeWidth={4} color="#FFFFFF" /> 
+                            <span className="text-[#FFFFFF] font-['MarryWeatherSans'] text-[14px] "> Disconnect</span>
+                        </button>
+                    )}
+                    <p className="flex items-center gap-1">
+                        <Dot size={20} strokeWidth={4} className="text-rose-600" /> 
+                        <span className="text-[12px] text-rose-600">No Device Connected</span>
+                    </p>
+                </div>
+
+                <div className="flex justify-between w-full">
+                    <button className="flex items-center justify-center gap-1 bg-[#027200] py-1 px-6 rounded">
+                        <span className="text-[#FFFFFF] font-['MarryWeatherSans'] text-[14px] tracking-wide"> Start Job</span>
+                    </button>
+                    <button className="flex items-center justify-center gap-1 bg-[#1C274C] py-1 px-6 rounded">
+                        <Pause size={18} strokeWidth={2} fill="#FFFFFF" color="#FFFFFF" /> 
+                        <span className="text-[#FFFFFF] font-['MarryWeatherSans'] text-[14px] tracking-wide"> Pause</span>
+                    </button>
+                    <button className="flex items-center justify-center gap-1 bg-[#BE0A0A] py-1 px-6 rounded-full">
+                        <Power size={18} strokeWidth={4} color="#FFFFFF" /> 
+                        <span className="text-[#FFFFFF] font-['MarryWeatherSans'] text-[14px] tracking-wide"> Stop</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+
+export function Setup({ jobSetUp, setJobSetup }) {
     const [rightClickEvent, setRightClickEvent] = useState(null);
-    const [jobSetUp, setJobSetup] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [selected, setSelected] = useState(null);
     const [jobToUpdate, setJobToUpdate] = useState(null)
@@ -183,9 +308,17 @@ export function Setup() {
                                                 strokeWidth={2} 
                                                 cursor={'pointer'} 
                                                 onClick={ () => {
-                                                    setJobSetup((prevSetup) => 
-                                                        prevSetup.map((item, i) => i === index ? {...item, selected: false} : item)
-                                                    );
+                                                    setJobSetup((prevSetup) => prevSetup.map((item, i) => i === index ? {...item, selected: false} : item));
+
+                                                    if (item.objects.get('type') === 'activeSelection') {
+                                                        item.objects.forEachObject((obj) => {
+                                                            obj.set({ stroke: 'transparent', hasControls: false, selectable: false })
+                                                        })
+                                                    } else {
+                                                        item.objects.set({ stroke: 'transparent', hasControls: false, selectable: false })
+                                                    }
+                                                    canvas.discardActiveObject();
+                                                    canvas.renderAll();
                                                 }}
                                             />
                                         ) : (
@@ -194,9 +327,17 @@ export function Setup() {
                                                 strokeWidth={2} 
                                                 cursor={'pointer'} 
                                                 onClick={ () => {
-                                                    setJobSetup((prevSetup) => 
-                                                        prevSetup.map((item, i) => i === index ? {...item, selected: true} : item)
-                                                    );
+                                                    setJobSetup((prevSetup) => prevSetup.map((item, i) => i === index ? {...item, selected: true} : item));
+
+                                                    if (item.objects.get('type') === 'activeSelection') {
+                                                        item.objects.forEachObject((obj) => {
+                                                            obj.set({ stroke: item.type === 'thru-cut' ? 'red' : 'blue', hasControls: false, selectable: true })
+                                                        })
+                                                    } else {
+                                                        item.objects.set({ stroke: item.type === 'thru-cut' ? 'red' : 'blue', hasControls: false, selectable: true })
+                                                    }
+                                                    canvas.discardActiveObject();
+                                                    canvas.renderAll();
                                                 }}
                                             />
                                         )}
