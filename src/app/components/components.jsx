@@ -19,7 +19,8 @@ import {
     Home,
     Power,
     Dot,
-    Pause
+    Pause,
+    ActivityIcon,
 } from "lucide-react";
 
 import ReactModal from "react-modal";
@@ -91,6 +92,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
     const [ writer, setWriter ] = useState(null);
     const [ reader, setReader ] = useState(null);
     const [ controllers, setControllers ] = useState({x: 0, y: 0});
+    const [ response, setResponse ] = useState({ visible: false, message: '' });
 
 
     const [ pause, setPause ] = useState(false);
@@ -100,6 +102,23 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
         {type: 'thru-cut', gcode: ['G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30','G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30','G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30']},
         {type: 'thru-cut', gcode: ['G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30','G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30','G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30']}
     ];
+
+    useEffect(() => {
+        processMsg();
+    }, [reader]);
+
+    const processMsg = async () => {
+        let text = '';
+        if (reader) {
+            const { done, value } = await reader.read();
+            if (done) return;
+
+            text += new TextDecoder().decode(value);
+            setResponse(prev => ({ ...prev, message: prev.message + text }));
+
+            processMsg();
+        }
+    }
 
     const handleConnection = async () => {
         try {
@@ -158,27 +177,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
             if (!writer) return;
             await writer.write(new TextEncoder().encode(`${gcode}\n`));
             console.log('sent: ', gcode)
-            serialRecieve(reader);
-        } catch (err) {
-            console.log(err);
-        }
-    }
-
-    const serialRecieve = async (reader) => {
-        let newResponse = '';
-        try {
-            console.log('reader', reader);
-            while (true) {
-                const { value , done} = await reader.read();
-                let res = new TextDecoder().decode(value);
-                if (done) {
-                    console.log('done');
-                    break;
-                } 
-                newResponse += res;
-                console.log('newResponse', newResponse);
-            }
-            console.log('response', newResponse);
+            // serialRecieve(reader);
         } catch (err) {
             console.log(err);
         }
@@ -193,22 +192,40 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
 
     return (
         <div className="flex justify-between flex-col h-full pb-6">
-            <div className="mt-4 p-2 h-[50%] bg-[#EBEBEB]">
-                { jobSetUp.map((item, index) => {
-                    return (
-                        <div key={index} className={ `flex justify-between items-end py-1 px-3 border-b border-b-[#1c274c28] hover:bg-[#d6d6d6ab]` } >
-                            <p className="font-['MarryWeatherSansRegular'] text-[13px]">{ item.name }</p>
-                            <div className="flex gap-3 py-1">
-                                <Trash2 
-                                    size={15} 
-                                    strokeWidth={2} 
-                                    onClick={ () => setJobSetup(jobSetUp.filter((item, i) => i !== index)) }
-                                    cursor={'pointer'}
-                                />
+            <div className="mt-4 h-[50%] bg-[#EBEBEB]">
+                <div className="w-full bg-[#081646ab] flex items-end justify-end gap-3 p-3">
+                    <ActivityIcon 
+                        size={20} 
+                        strokeWidth={2} 
+                        color={'#ffffff'} 
+                        onClick={ () => { setResponse(prev => ({ ...prev, visible: !response.visible })) }} />
+                    
+                </div>
+                { response.visible ? 
+                    <div className="bg-[#1e263f] text-sm text-white w-full h-full p-4">
+                        <textarea 
+                            className="w-full h-full outline-none bg-[#1e263f] resize-none" 
+                            value={ response.message } >
+                        </textarea>
+                    </div>
+                 : 
+                    jobSetUp.map((item, index) => {
+                        return (
+                            <div key={index} className={ `flex justify-between items-end h-full py-1 px-3 border-b border-b-[#1c274c28] hover:bg-[#d6d6d6ab]` } >
+                                <p className="font-['MarryWeatherSansRegular'] text-[13px]">{ item.name }</p>
+                                <div className="flex gap-3 py-1">
+                                    <Trash2 
+                                        size={15} 
+                                        strokeWidth={2} 
+                                        onClick={ () => setJobSetup(jobSetUp.filter((item, i) => i !== index)) }
+                                        cursor={'pointer'}
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    )
-                })}
+                        )
+                    })
+                }
+                
             </div>
             <div className="flex flex-col items-center justify-center gap-5">
                 <div className="flex flex-col items-center justify-center gap-3 pb-10">
