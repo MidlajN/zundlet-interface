@@ -1,4 +1,4 @@
-import React, { act, useEffect, useState } from "react";
+import React, { act, useEffect, useRef, useState } from "react";
 import { deleteObject } from "./canvasFunctions";
 import { 
     CloudUpload, 
@@ -88,6 +88,7 @@ export function Import() {
 
 
 export const Cut = ({ jobSetUp, setJobSetup }) => {
+    const textareaRef = useRef(null)
     const [ port , setPort ] = useState(null);
     const [ writer, setWriter ] = useState(null);
     const [ reader, setReader ] = useState(null);
@@ -103,10 +104,6 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
         {type: 'thru-cut', gcode: ['G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30','G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30','G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30']}
     ];
 
-    useEffect(() => {
-        processMsg();
-    }, [reader]);
-
     const processMsg = async () => {
         let text = '';
         if (reader) {
@@ -114,6 +111,12 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
             if (done) return;
 
             text += new TextDecoder().decode(value);
+            // const newlineIndex = text.indexOf('\n');
+            // if (newlineIndex !== -1) {
+            //     const completeMessage = text.substring(0, newlineIndex + 1);
+            //     text = text.substring(newlineIndex + 1);
+            //     setResponse(prev => ({ ...prev, message: prev.message + completeMessage}))
+            // }
             setResponse(prev => ({ ...prev, message: prev.message + text }));
 
             processMsg();
@@ -165,6 +168,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                         setIndex({jobIndex: index.jobIndex + 1, arrayIndex: 0});
                     }
                 } else {
+                    sendToMachine(array[index.jobIndex]['gcode'][current])
                     setIndex({jobIndex: index.jobIndex, arrayIndex: current + 1});
                 }
                 console.log('array \n index: ', index)
@@ -184,16 +188,27 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
     }
 
     useEffect(() => {
+        processMsg();
+    }, [reader]);
+
+    useEffect(() => {
         if (isRunning && !pause) {
             sendGCode()
         }
     },[isRunning, pause, index])
 
+     // Scroll the textarea to the bottom when it overflows
+    useEffect(() => {
+        if ( textareaRef.current ) {
+            textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+        }
+    }, [response.message]);
+
 
     return (
-        <div className="flex justify-between flex-col h-full pb-6">
-            <div className="mt-4 h-[50%] bg-[#EBEBEB]">
-                <div className="w-full bg-[#081646ab] flex items-end justify-end gap-3 p-3">
+        <div className="flex justify-between gap-8 flex-col h-full pb-6">
+            <div className="mt-4 h-full bg-[#EBEBEB] cut">
+                <div className="w-full h-[10%] bg-[#081646ab] flex items-end justify-end gap-3 p-3">
                     <ActivityIcon 
                         size={20} 
                         strokeWidth={2} 
@@ -202,16 +217,13 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                     
                 </div>
                 { response.visible ? 
-                    <div className="bg-[#1e263f] text-sm text-white w-full h-full p-4">
-                        <textarea 
-                            className="w-full h-full outline-none bg-[#1e263f] resize-none" 
-                            value={ response.message } >
-                        </textarea>
+                    <div className="text-sm responses h-[90%]">
+                        <textarea ref={textareaRef} value={ response.message } ></textarea>
                     </div>
                  : 
                     jobSetUp.map((item, index) => {
                         return (
-                            <div key={index} className={ `flex justify-between items-end h-full py-1 px-3 border-b border-b-[#1c274c28] hover:bg-[#d6d6d6ab]` } >
+                            <div key={index} className={ `flex justify-between items-end h-[90%] py-1 px-3 border-b border-b-[#1c274c28] hover:bg-[#d6d6d6ab]` } >
                                 <p className="font-['MarryWeatherSansRegular'] text-[13px]">{ item.name }</p>
                                 <div className="flex gap-3 py-1">
                                     <Trash2 
