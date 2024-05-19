@@ -87,18 +87,28 @@ export function Import() {
 
 
 export const Cut = ({ jobSetUp, setJobSetup }) => {
-    const [port , setPort] = useState(null);
-    const [writer, setWriter] = useState(null);
-    const [reader, setReader] = useState(null);
+    const [ port , setPort ] = useState(null);
+    const [ writer, setWriter ] = useState(null);
+    const [ reader, setReader ] = useState(null);
+    const [ controllers, setControllers ] = useState({x: 0, y: 0});
+
+
+    const [ pause, setPause ] = useState(false);
+    const [ index, setIndex ] = useState({jobIndex: 0, arrayIndex: 0});
+    const [ isRunning, setIsRunning ] = useState(false);
+    const array = [
+        {type: 'thru-cut', gcode: ['G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30','G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30','G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30']},
+        {type: 'thru-cut', gcode: ['G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30','G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30','G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30']}
+    ];
 
     const handleConnection = async () => {
         try {
             const newPort = await navigator.serial.requestPort();
-            await newPort.open({ baudRate: 9600 });
+            await newPort.open({ baudRate: 115200 });
             setPort(newPort);
             console.log('port', newPort)
             setWriter(newPort.writable.getWriter());
-            setReader(newPort.readable.getReadable());
+            setReader(newPort.readable.getReader());
         } catch (err) {
             console.log("Error while connecting", err)
         }
@@ -113,6 +123,51 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
             setPort(null);
         }
     }
+
+    const handleJob = () => {
+        if (isRunning) {
+            setIsRunning(false);
+            return;
+        }
+        setIsRunning(true);
+    }
+
+
+    const sendGCode = () => {
+        const current = index.arrayIndex;
+        if (!pause) {
+            setTimeout(() => {
+                console.log('current',array[index.jobIndex], current, index)
+                if ( current == array[index.jobIndex]['gcode'].length) {
+                    if ( index.jobIndex === array.length - 1) {
+                        setIsRunning(false);
+                        setIndex({jobIndex: 0, arrayIndex: 0});
+                    } else {
+                        setIndex({jobIndex: index.jobIndex + 1, arrayIndex: 0});
+                    }
+                } else {
+                    setIndex({jobIndex: index.jobIndex, arrayIndex: current + 1});
+                }
+                console.log('array \n index: ', index)
+            }, 1000);
+        }
+    }
+
+    const sendToMachine = async (gcode) => {
+        try {
+            if (!writer) return;
+            await writer.write(new TextEncoder().encode(`${gcode}\n`));
+
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    useEffect(() => {
+        if (isRunning && !pause) {
+            sendGCode()
+        }
+    },[isRunning, pause, index])
 
 
     return (
@@ -136,21 +191,44 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
             </div>
             <div className="flex flex-col items-center justify-center gap-5">
                 <div className="flex flex-col items-center justify-center gap-3 pb-10">
-                    <button className="p-3 bg-[#1C274C] rounded">
+                    <button 
+                        className="p-3 bg-[#1C274C] rounded"
+                        onClick={ () => {
+                            sendToMachine(controllers.y);
+                            setControllers({...controllers, y: controllers.y + 10});
+                        }}
+                        >
                         <ChevronUp size={20} strokeWidth={4} color={'#F5762E'}/>
                     </button>
                     <div className="flex gap-3">
-                        <button className="p-3 bg-[#1C274C] rounded">
+                        <button 
+                            className="p-3 bg-[#1C274C] rounded"
+                            onClick={ () => {
+                                sendToMachine(controllers.x);
+                                setControllers({...controllers, x: (controllers.x - 10) < 0 ? 0 : controllers.x - 10});
+                            }}>
                             <ChevronLeft size={20} strokeWidth={4} color={'#F5762E'}/>
                         </button>
-                        <button className="p-3 bg-[#1C274C] rounded">
+                        <button 
+                            className="p-3 bg-[#1C274C] rounded"
+                            onClick={ () => sendToMachine('G28')} >
                             <Home size={20} strokeWidth={2} color={'#ffffff'}/>
                         </button>
-                        <button className="p-3 bg-[#1C274C] rounded">
+                        <button 
+                            className="p-3 bg-[#1C274C] rounded"
+                            onClick={ () => {
+                                sendToMachine(controllers.x);
+                                setControllers({...controllers, x: controllers.x + 10});
+                            }}>
                             <ChevronRight size={20} strokeWidth={4} color={'#F5762E'}/>
                         </button>
                     </div>
-                    <button className="p-3 bg-[#1C274C] rounded">
+                    <button 
+                        className="p-3 bg-[#1C274C] rounded"
+                        onClick={ () => {
+                            sendToMachine(controllers.y);
+                            setControllers({...controllers, y: (controllers.y - 10) < 0 ? 0 : controllers.y - 10});
+                        }}>
                         <ChevronDown size={20} strokeWidth={4} color={'#F5762E'}/>
                     </button>
                 </div>
@@ -168,20 +246,25 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                         </button>
                     )}
                     <p className="flex items-center gap-1">
-                        <Dot size={20} strokeWidth={4} className="text-rose-600" /> 
-                        <span className="text-[12px] text-rose-600">No Device Connected</span>
+                        <Dot size={20} strokeWidth={4} className={!port ? 'text-[#d41d1d]' : 'text-[#2c944f]'} /> 
+                        <span className={`text-[12px] ${!port ? 'text-[#d41d1d]' : 'text-[#2c944f]'}`}>{ port ? 'Device Connected' : 'No Device Connected'}</span>
                     </p>
                 </div>
 
                 <div className="flex justify-between w-full">
-                    <button className="flex items-center justify-center gap-1 bg-[#027200] py-1 px-6 rounded">
+                    <button className="flex items-center justify-center gap-1 bg-[#027200] py-1 px-6 rounded" onClick={ handleJob }>
                         <span className="text-[#FFFFFF] font-['MarryWeatherSans'] text-[14px] tracking-wide"> Start Job</span>
                     </button>
-                    <button className="flex items-center justify-center gap-1 bg-[#1C274C] py-1 px-6 rounded">
+                    <button className="flex items-center justify-center gap-1 bg-[#1C274C] py-1 px-6 rounded" onClick={ () => { setPause(!pause) }}>
                         <Pause size={18} strokeWidth={2} fill="#FFFFFF" color="#FFFFFF" /> 
                         <span className="text-[#FFFFFF] font-['MarryWeatherSans'] text-[14px] tracking-wide"> Pause</span>
                     </button>
-                    <button className="flex items-center justify-center gap-1 bg-[#BE0A0A] py-1 px-6 rounded-full">
+                    <button 
+                        className="flex items-center justify-center gap-1 bg-[#BE0A0A] py-1 px-6 rounded-full"  
+                        onClick={ () => {
+                            setIsRunning(false);
+                            setIndex({jobIndex: 0, arrayIndex: 0});
+                        }}>
                         <Power size={18} strokeWidth={4} color="#FFFFFF" /> 
                         <span className="text-[#FFFFFF] font-['MarryWeatherSans'] text-[14px] tracking-wide"> Stop</span>
                     </button>
