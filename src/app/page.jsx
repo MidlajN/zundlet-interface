@@ -7,7 +7,7 @@ import { Default, Elements, FreeDraw, Import, TextBox, Setup, Cut } from "./comp
 import { split, group, info } from "./components/canvasFunctions";
 
 export default function Home() {
-  const [tool, setTool] = useState(null);
+  const [tool, setTool] = useState('Select');
   const [ expanded, setExpanded ] = useState(false);
   const [ hideSideBar, setHideSideBar ] = useState(false);
   const [jobSetUp, setJobSetup] = useState([]);
@@ -20,7 +20,7 @@ export default function Home() {
             <h3 className="py-5">Kochun<span>D</span></h3>
             <div className="buttonGroup px-[0.3rem] flex gap-4 items-center justify-around">
               <button 
-                className="active"
+                className={ tool !== 'Setup' && tool !== 'Cut' ? 'active' : ''}
                 onClick={() => {
                   setTool('Select');
                   setExpanded(true);
@@ -33,6 +33,7 @@ export default function Home() {
                 }}
               > Editor </button>
               <button 
+                className={ tool === 'Setup' ? 'active' : ''}
                 onClick={() => {
                   setTool('Setup');
                   setExpanded(true);
@@ -40,6 +41,7 @@ export default function Home() {
                 }}
               > Setup </button>
               <button
+                className={ tool === 'Cut' ? 'active' : ''}
                 onClick={() => {
                   setExpanded(true);
                   setHideSideBar(true);
@@ -94,6 +96,7 @@ const SideNav = ({ tool, setTool, setExpanded }) => {
         canvasFunction={group}
       />
       <SidebarItem 
+        // eslint-disable-next-line @next/next/no-img-element
         icon={ <img src="/split.svg" alt="" /> } 
         text={'Split'} 
         setTool={setTool} 

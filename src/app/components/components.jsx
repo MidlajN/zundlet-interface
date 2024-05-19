@@ -111,12 +111,6 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
             if (done) return;
 
             text += new TextDecoder().decode(value);
-            // const newlineIndex = text.indexOf('\n');
-            // if (newlineIndex !== -1) {
-            //     const completeMessage = text.substring(0, newlineIndex + 1);
-            //     text = text.substring(newlineIndex + 1);
-            //     setResponse(prev => ({ ...prev, message: prev.message + completeMessage}))
-            // }
             setResponse(prev => ({ ...prev, message: prev.message + text }));
 
             processMsg();

@@ -211,6 +211,6 @@ export const handleKeyDown = ( copiedObject, setCopiedObject ) => (e) => {
 
 export const info = () => {
     const activeObject = canvas.getActiveObject();
-    console.log('info', activeObject, ' stroke-width : ', activeObject.strokeWidth)
+    // console.log('info', activeObject, ' stroke-width : ', activeObject.strokeWidth)
     canvas.renderAll();
 }
