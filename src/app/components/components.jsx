@@ -104,7 +104,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
     const handleConnection = async () => {
         try {
             const newPort = await navigator.serial.requestPort();
-            await newPort.open({ baudRate: 115200 });
+            await newPort.open({ baudRate: 9600 });
             setPort(newPort);
             console.log('port', newPort)
             setWriter(newPort.writable.getWriter());
@@ -157,7 +157,28 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
         try {
             if (!writer) return;
             await writer.write(new TextEncoder().encode(`${gcode}\n`));
+            console.log('sent: ', gcode)
+            serialRecieve(reader);
+        } catch (err) {
+            console.log(err);
+        }
+    }
 
+    const serialRecieve = async (reader) => {
+        let newResponse = '';
+        try {
+            console.log('reader', reader);
+            while (true) {
+                const { value , done} = await reader.read();
+                let res = new TextDecoder().decode(value);
+                if (done) {
+                    console.log('done');
+                    break;
+                } 
+                newResponse += res;
+                console.log('newResponse', newResponse);
+            }
+            console.log('response', newResponse);
         } catch (err) {
             console.log(err);
         }
@@ -194,7 +215,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                     <button 
                         className="p-3 bg-[#1C274C] rounded"
                         onClick={ () => {
-                            sendToMachine(controllers.y);
+                            sendToMachine(`G01 X${controllers.x} Y${controllers.y}`);
                             setControllers({...controllers, y: controllers.y + 10});
                         }}
                         >
@@ -204,7 +225,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                         <button 
                             className="p-3 bg-[#1C274C] rounded"
                             onClick={ () => {
-                                sendToMachine(controllers.x);
+                                sendToMachine(`G01 X${controllers.x} Y${controllers.y}`);
                                 setControllers({...controllers, x: (controllers.x - 10) < 0 ? 0 : controllers.x - 10});
                             }}>
                             <ChevronLeft size={20} strokeWidth={4} color={'#F5762E'}/>
@@ -217,7 +238,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                         <button 
                             className="p-3 bg-[#1C274C] rounded"
                             onClick={ () => {
-                                sendToMachine(controllers.x);
+                                sendToMachine(`G01 X${controllers.x} Y${controllers.y}`);
                                 setControllers({...controllers, x: controllers.x + 10});
                             }}>
                             <ChevronRight size={20} strokeWidth={4} color={'#F5762E'}/>
@@ -226,7 +247,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                     <button 
                         className="p-3 bg-[#1C274C] rounded"
                         onClick={ () => {
-                            sendToMachine(controllers.y);
+                            sendToMachine(`G01 X${controllers.x} Y${controllers.y}`);
                             setControllers({...controllers, y: (controllers.y - 10) < 0 ? 0 : controllers.y - 10});
                         }}>
                         <ChevronDown size={20} strokeWidth={4} color={'#F5762E'}/>
