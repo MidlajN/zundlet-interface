@@ -102,8 +102,38 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
     const [ index, setIndex ] = useState({jobIndex: 0, arrayIndex: 0});
     const [ isRunning, setIsRunning ] = useState(false);
     const array = [
-        {type: 'thru-cut', gcode: ['G01 X0 Y0', 'G01 X100 Y0', 'G01 X100 Y100', 'G01 X0 Y100', 'G01 X0 Y0']},
-        {type: 'thru-cut', gcode: ['G01 X0 Y0', 'G01 X200 Y0', 'G01 X200 Y200', 'G01 X0 Y200', 'G01 X0 Y0']}
+        // {type: 'thru-cut', gcode: ['G01 X0Y0Z5.25', 'G01 X100Y100', 'G01 X100Y100Z0', 'G01 X100Y200', 'G01 X100Y200Z10.5', 'G01 X200Y200', 'G01 X200Y200Z21', 'G01 X200Y100', 'G01 X200Y100Z31.5', 'G01 X100Y100', 'G01 X100Y100Z25.75', 'G01 X0Y0', 'G01 X0Y0Z0']},
+        // {type: 'thru-cut', gcode: ['M10S90', 'M10S140', 'M03S1200', 'M03S1500']},
+        {
+            type: 'thru-cut', 
+            gcode: [
+                'G28',
+                'G00 X300Y20Z0', 
+                'M10S90', 
+                'G00 X300Y20Z25.5', 
+                'M10S140', 
+                'G00 X300Y20Z0', 
+                'G00 X221Y14Z0', 
+                'G00 X221Y14Z15', 
+                'G00 X221Y14Z0',
+                'G00 X43Y51Z0',
+                'M03 S1800',
+                'G00 X43Y51Z20',
+                'G01 X126Y51Z20F2000',
+                'G01 X126Y134Z20F2000',
+                'G01 X43Y134Z20F2000', 
+                'G01 X43Y51Z20F2000',
+                'G00 X43Y51Z0',
+                'M05',
+                // 'G28',
+                'G00 X330Y19.5Z0', 
+                'G00 X330Y19.5Z25.5',
+                'M10S90', 
+                'G00 X330Y19.5Z0', 
+                'M10S140', 
+                'G00 X0Y0Z0'
+            ]
+        },
     ];
 
     const processMsg = async () => {
@@ -154,7 +184,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
     const sendGCode = () => {
         const current = index.arrayIndex;
         if (!pause) {
-            // setTimeout(() => {
+            setTimeout(() => {
                 console.log('current',array[index.jobIndex], current, index)
                 if ( current == array[index.jobIndex]['gcode'].length) {
                     if ( index.jobIndex === array.length - 1) {
@@ -168,7 +198,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                     setIndex({jobIndex: index.jobIndex, arrayIndex: current + 1});
                 }
                 console.log('array \n index: ', index)
-            // }, 1000);
+            }, 1000);
         }
     }
 
@@ -214,7 +244,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                 </div>
                 { response.visible ? 
                     <div className="text-sm responses h-[90%] relative">
-                        <textarea ref={textareaRef} defaultValue={ response.message } style={{ pointerEvents: 'none'}} ></textarea>
+                        <textarea ref={textareaRef} defaultValue={ response.message } ></textarea>
                         <div className="absolute w-full bottom-0 left-0 p-3">
                             <input 
                                 ref={ gcodeRef }
@@ -233,7 +263,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                  : 
                     jobSetUp.map((item, index) => {
                         return (
-                            <div key={index} className={ `flex justify-between items-end py-1 px-3 border-b border-b-[#1c274c28] hover:bg-[#d6d6d6ab]` } >
+                            <div key={index} className={ `flex justify-between items-end py-1 px-3 border-b border-b-[#1c274c28] hover:bg-[#d6d6d6ab] ${ item.selected ? ' opacity-100' : 'opacity-50'}` } >
                                 <p className="font-['MarryWeatherSansRegular'] text-[13px]">{ item.name }</p>
                                 <div className="flex gap-3 py-1">
                                     <Trash2 
@@ -254,7 +284,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                     <button 
                         className="p-3 bg-[#1C274C] rounded"
                         onClick={ () => {
-                            sendToMachine(`G01 X${controllers.x} Y${controllers.y}`);
+                            sendToMachine(`G00 X${controllers.x} Y${controllers.y}`);
                             setControllers({...controllers, y: controllers.y + 10});
                         }}
                         >
@@ -264,7 +294,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                         <button 
                             className="p-3 bg-[#1C274C] rounded"
                             onClick={ () => {
-                                sendToMachine(`G01 X${controllers.x} Y${controllers.y}`);
+                                sendToMachine(`G00 X${controllers.x} Y${controllers.y}`);
                                 setControllers({...controllers, x: (controllers.x - 10) < 0 ? 0 : controllers.x - 10});
                             }}>
                             <ChevronLeft size={20} strokeWidth={4} color={'#F5762E'}/>
@@ -277,7 +307,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                         <button 
                             className="p-3 bg-[#1C274C] rounded"
                             onClick={ () => {
-                                sendToMachine(`G01 X${controllers.x} Y${controllers.y}`);
+                                sendToMachine(`G00 X${controllers.x} Y${controllers.y}`);
                                 setControllers({...controllers, x: controllers.x + 10});
                             }}>
                             <ChevronRight size={20} strokeWidth={4} color={'#F5762E'}/>
@@ -286,7 +316,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                     <button 
                         className="p-3 bg-[#1C274C] rounded"
                         onClick={ () => {
-                            sendToMachine(`G01 X${controllers.x} Y${controllers.y}`);
+                            sendToMachine(`G00 X${controllers.x} Y${controllers.y}`);
                             setControllers({...controllers, y: (controllers.y - 10) < 0 ? 0 : controllers.y - 10});
                         }}>
                         <ChevronDown size={20} strokeWidth={4} color={'#F5762E'}/>
