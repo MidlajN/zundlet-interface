@@ -21,6 +21,7 @@ import {
     Dot,
     Pause,
     ActivityIcon,
+    FileCog,
 } from "lucide-react";
 
 import ReactModal from "react-modal";
@@ -203,12 +204,12 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
         <div className="flex justify-between gap-8 flex-col h-full pb-6">
             <div className="mt-4 h-full bg-[#EBEBEB] cut">
                 <div className="w-full h-[10%] bg-[#081646ab] flex items-end justify-end gap-3 p-3">
+                <FileCog size={20} strokeWidth={2} color={'#ffffff'}  />
                     <ActivityIcon 
                         size={20} 
                         strokeWidth={2} 
                         color={'#ffffff'} 
                         onClick={ () => { setResponse(prev => ({ ...prev, visible: !response.visible })) }} />
-                    
                 </div>
                 { response.visible ? 
                     <div className="text-sm responses h-[90%]">
@@ -217,7 +218,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                  : 
                     jobSetUp.map((item, index) => {
                         return (
-                            <div key={index} className={ `flex justify-between items-end h-[90%] py-1 px-3 border-b border-b-[#1c274c28] hover:bg-[#d6d6d6ab]` } >
+                            <div key={index} className={ `flex justify-between items-end py-1 px-3 border-b border-b-[#1c274c28] hover:bg-[#d6d6d6ab]` } >
                                 <p className="font-['MarryWeatherSansRegular'] text-[13px]">{ item.name }</p>
                                 <div className="flex gap-3 py-1">
                                     <Trash2 
@@ -377,7 +378,7 @@ export function Setup({ jobSetUp, setJobSetup }) {
 
                                 [newSetup[selected], newSetup[targetIndex]] = [newSetup[targetIndex], newSetup[selected]];
                                 setJobSetup(newSetup);
-                                setSelected(selected + 1)
+                                setSelected(targetIndex)
                             }} />
                         <ArrowUpNarrowWide 
                             size={20} 
@@ -389,7 +390,7 @@ export function Setup({ jobSetUp, setJobSetup }) {
 
                                 [newSetup[selected], newSetup[targetIndex]] = [newSetup[targetIndex], newSetup[selected]];
                                 setJobSetup(newSetup);
-                                setSelected(selected - 1);
+                                setSelected(targetIndex);
                             }}
                         />
                         <Trash2 
@@ -545,7 +546,17 @@ const SetupModal = ({modalOpen, setModalOpen, jobSetUp, setJobSetup, setRightCli
             routerSpeed: 1200,
             offset: 'inside',
             zLowering: 200,
-            zLowered: 400
+            zLowered: 400,
+            toolDia: 0.3
+        }
+    })
+    const [ creaseData, setCreaseData ] = useState({
+        name: 1,
+        properties : {
+            materialThickness: 0.5,
+            penetration: 30,
+            zLowering: 300,
+            zLowered: 500
         }
     })
 
@@ -575,6 +586,12 @@ const SetupModal = ({modalOpen, setModalOpen, jobSetUp, setJobSetup, setRightCli
             } else {
                 setRouterData((prev) => ({ ...prev, properties: { ...prev.properties, [event.target.name] : event.target.value } }));
             }
+        } else if (mode === 'crease') {
+            if (event.target.name === 'name') {
+                setCreaseData((prev) => ({ ...prev, name: event.target.value }));
+            } else {
+                setCreaseData((prev) => ({ ...prev, properties: { ...prev.properties, [event.target.name] : event.target.value } }));
+            }
         }
     }
 
@@ -587,22 +604,22 @@ const SetupModal = ({modalOpen, setModalOpen, jobSetUp, setJobSetup, setRightCli
             if (activeObject.get('type') === 'activeSelection') {
                 activeObject.forEachObject((obj) => {
                     obj.set({
-                        stroke: selected === 'thru-cut' ? '#ff0000' : '#0000ff',
+                        stroke: selected === 'thru-cut' || selected === 'crease' ? selected === 'thru-cut' ? '#ff0000' : '#00ff00' : '#0000ff',
                     })
                 });
             } else {
                 activeObject.set({
-                    stroke: selected === 'thru-cut' ? '#ff0000' : '#0000ff',
+                    stroke: selected === 'thru-cut' || selected === 'crease' ? selected === 'thru-cut' ? '#ff0000' : '#00ff00' : '#0000ff',
                 })
             }
         }
         canvas.discardActiveObject()
         canvas.requestRenderAll();
         const setup = {
-            name: selected === 'thru-cut' ? `Thru-Cut ${thruCutData.name}` : `Router ${routerData.name}`,
-            type: selected === 'thru-cut' ? 'thru-cut' : 'router',
+            name: selected === 'thru-cut' || selected === 'crease' ? selected === 'thru-cut' ? `Thru-Cut ${thruCutData.name}` : `Crease ${creaseData.name}` : `Router ${routerData.name}`,
+            type: selected === 'thru-cut' || selected === 'crease' ? selected === 'thru-cut' ? 'thru-cut' : 'crease' : 'router',
             objects: activeObject,
-            properties: selected === 'thru-cut' ? thruCutData.properties : routerData.properties, 
+            properties: selected === 'thru-cut' || selected === 'crease' ? selected === 'thru-cut' ? thruCutData.properties : creaseData.properties : routerData.properties, 
             selected: true
         }
         
@@ -653,6 +670,40 @@ const SetupModal = ({modalOpen, setModalOpen, jobSetUp, setJobSetup, setRightCli
         )
     }
 
+    const crease = () => {
+        return (
+            <div>
+                <div className="flex items-end justify-between mb-4">
+                    <p className="text-sm">Material Thickness : </p>
+                    <div className="flex gap-1 w-[50%]">
+                        <input 
+                            type="text"
+                            name="materialThickness"
+                            className="w-full outline-none text-end px-2 text-xs" 
+                            value={ creaseData.properties.materialThickness } 
+                            onChange={ (e) => handleChange('crease', e) }
+                        />
+                        <p>mm</p>
+                    </div>
+                </div>
+                <div className="flex items-end justify-between">
+                    <p className="text-sm">Percentage of Penetration : </p>
+                    <div className="flex gap-1 w-[50%]">
+                        <input 
+                            type="text" 
+                            name="penetration"
+                            className="w-full outline-none text-end px-2 text-xs"
+                            value={ creaseData.properties.penetration }
+                            onChange={ (e) => handleChange('crease', e) }
+                        />
+                        <p> % &nbsp;&nbsp;</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+
     const router = () => {
         return (
             <div>
@@ -664,6 +715,19 @@ const SetupModal = ({modalOpen, setModalOpen, jobSetUp, setJobSetup, setRightCli
                             name="materialThickness"
                             className="w-full outline-none text-end px-2 text-xs"  
                             value={ routerData.properties.materialThickness }
+                            onChange={ (e) => handleChange('router', e) }
+                        />
+                        <p>mm</p>
+                    </div>
+                </div>
+                <div className="flex items-end justify-between gap-8 mb-4">
+                    <p className="text-sm">Tool Diameter : </p>
+                    <div className="flex gap-1 w-[40%]">
+                        <input 
+                            type="text"
+                            name="toolDia"
+                            className="w-full outline-none text-end px-2 text-xs"  
+                            value={ routerData.properties.toolDia }
                             onChange={ (e) => handleChange('router', e) }
                         />
                         <p>mm</p>
@@ -777,6 +841,7 @@ const SetupModal = ({modalOpen, setModalOpen, jobSetUp, setJobSetup, setRightCli
                             <select className="w-full" onChange={(e) => setSelected(e.target.value)}>
                                 <option value="thru-cut">Thru-Cut</option>
                                 <option value="router">Router</option>
+                                <option value="crease">Crease</option>
                             </select>
                             <div><ChevronsDown size={18} /></div>
                         </div>
@@ -786,7 +851,7 @@ const SetupModal = ({modalOpen, setModalOpen, jobSetUp, setJobSetup, setRightCli
                         <input 
                             type="text" 
                             name="name"
-                            value={ selected === 'thru-cut' ? thruCutData.name : routerData.name } 
+                            value={ selected === 'thru-cut' || selected === 'crease' ? selected === 'thru-cut' ? thruCutData.name : creaseData.name : routerData.name } 
                             onChange={ (e) => handleChange(selected, e) }
                         />
                     </div>
@@ -794,6 +859,7 @@ const SetupModal = ({modalOpen, setModalOpen, jobSetUp, setJobSetup, setRightCli
                     <div className="bg-[#e2e2e2] p-4 w-full min-h-[15rem]">
                         { selected === 'thru-cut' && thruCut() }
                         { selected === 'router' && router() }
+                        { selected === 'crease' && crease() }
                     </div>
 
                     <div className="mt-6 px-3 py-2">
@@ -804,7 +870,7 @@ const SetupModal = ({modalOpen, setModalOpen, jobSetUp, setJobSetup, setRightCli
                                     type="text"
                                     name="zLowered"
                                     className="w-full outline-none text-end px-2 text-xs" 
-                                    value={ selected === 'thru-cut' ? thruCutData.properties.zLowered : routerData.properties.zLowered }
+                                    value={ selected === 'thru-cut' || selected === 'crease' ? selected === 'thru-cut' ? thruCutData.properties.zLowered : creaseData.properties.zLowered : routerData.properties.zLowered }
                                     onChange={ (e) => handleChange(selected, e) }
                                 />
                                 <p>mm/s</p>
@@ -817,7 +883,7 @@ const SetupModal = ({modalOpen, setModalOpen, jobSetUp, setJobSetup, setRightCli
                                     type="text"
                                     name="zLowering"
                                     className="w-full outline-none text-end px-2 text-xs"
-                                    value={ selected === 'thru-cut' ? thruCutData.properties.zLowering : routerData.properties.zLowering }
+                                    value={ selected === 'thru-cut' || selected === 'crease' ? selected === 'thru-cut' ? thruCutData.properties.zLowering : creaseData.properties.zLowering : routerData.properties.zLowering }
                                     onChange={ (e) => handleChange(selected, e) }
                                 />
                                 <p>mm/s</p>
