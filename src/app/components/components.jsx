@@ -122,7 +122,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
     const handleConnection = async () => {
         try {
             const newPort = await navigator.serial.requestPort();
-            await newPort.open({ baudRate: 9600 });
+            await newPort.open({ baudRate: 115200 });
             setPort(newPort);
             console.log('port', newPort)
             setWriter(newPort.writable.getWriter());
