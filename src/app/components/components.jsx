@@ -90,6 +90,7 @@ export function Import() {
 
 export const Cut = ({ jobSetUp, setJobSetup }) => {
     const textareaRef = useRef(null)
+    const gcodeRef = useRef(null)
     const [ port , setPort ] = useState(null);
     const [ writer, setWriter ] = useState(null);
     const [ reader, setReader ] = useState(null);
@@ -101,8 +102,8 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
     const [ index, setIndex ] = useState({jobIndex: 0, arrayIndex: 0});
     const [ isRunning, setIsRunning ] = useState(false);
     const array = [
-        {type: 'thru-cut', gcode: ['G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30','G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30','G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30']},
-        {type: 'thru-cut', gcode: ['G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30','G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30','G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30']}
+        {type: 'thru-cut', gcode: ['G01 X0 Y0', 'G01 X100 Y0', 'G01 X100 Y100', 'G01 X0 Y100', 'G01 X0 Y0']},
+        {type: 'thru-cut', gcode: ['G01 X0 Y0', 'G01 X200 Y0', 'G01 X200 Y200', 'G01 X0 Y200', 'G01 X0 Y0']}
     ];
 
     const processMsg = async () => {
@@ -153,7 +154,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
     const sendGCode = () => {
         const current = index.arrayIndex;
         if (!pause) {
-            setTimeout(() => {
+            // setTimeout(() => {
                 console.log('current',array[index.jobIndex], current, index)
                 if ( current == array[index.jobIndex]['gcode'].length) {
                     if ( index.jobIndex === array.length - 1) {
@@ -167,7 +168,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                     setIndex({jobIndex: index.jobIndex, arrayIndex: current + 1});
                 }
                 console.log('array \n index: ', index)
-            }, 1000);
+            // }, 1000);
         }
     }
 
@@ -203,7 +204,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
     return (
         <div className="flex justify-between gap-8 flex-col h-full pb-6">
             <div className="mt-4 h-full bg-[#EBEBEB] cut">
-                <div className="w-full h-[10%] bg-[#081646ab] flex items-end justify-end gap-3 p-3">
+                <div className="w-full h-[10%] bg-[#1e263f] flex items-end justify-end gap-3 p-3">
                 <FileCog size={20} strokeWidth={2} color={'#ffffff'}  />
                     <ActivityIcon 
                         size={20} 
@@ -212,8 +213,22 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                         onClick={ () => { setResponse(prev => ({ ...prev, visible: !response.visible })) }} />
                 </div>
                 { response.visible ? 
-                    <div className="text-sm responses h-[90%]">
-                        <textarea ref={textareaRef} value={ response.message } ></textarea>
+                    <div className="text-sm responses h-[90%] relative">
+                        <textarea ref={textareaRef} defaultValue={ response.message } style={{ pointerEvents: 'none'}} ></textarea>
+                        <div className="absolute w-full bottom-0 left-0 p-3">
+                            <input 
+                                ref={ gcodeRef }
+                                className="w-full bg-[#1e263f] p-2 border border-[#ffffff69] outline-none text-sm" 
+                                placeholder="Enter You G-Code here" 
+                                onKeyDown={ (e) => {
+                                    if (e.key === 'Enter') {
+                                        const value = gcodeRef.current.value;
+                                        sendToMachine(value)
+                                        gcodeRef.current.value = '';
+                                    }
+                                }}
+                            />
+                        </div>
                     </div>
                  : 
                     jobSetUp.map((item, index) => {
