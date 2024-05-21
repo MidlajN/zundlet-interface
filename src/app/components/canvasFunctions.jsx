@@ -4,7 +4,7 @@
  * @param {File} file - The file to be handled
  * @return {void} 
  */
-export const handleFile = (file) => {
+export const handleFile = (file, canvas) => {
     if (file.type !== 'image/svg+xml') return;
 
     const reader = new FileReader();

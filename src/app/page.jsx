@@ -15,42 +15,12 @@ export default function Home() {
   return (
     <>
       <section className="h-screen">
-        <nav className="navbar h-[9%]">
-          <div className="px-16 w-full h-full flex justify-between items-center navDiv">
-            <h3 className="py-5">Kochun<span>D</span></h3>
-            <div className="buttonGroup px-[0.3rem] flex gap-4 items-center justify-around">
-              <button 
-                className={ tool !== 'Setup' && tool !== 'Cut' ? 'active' : ''}
-                onClick={() => {
-                  setTool('Select');
-                  setExpanded(true);
-                  setHideSideBar(false);
-                  canvas.getObjects().forEach((obj) => obj.set({
-                    hasControls: true,
-                    lockMovementX: false,
-                    lockMovementY: false
-                  }));
-                }}
-              > Editor </button>
-              <button 
-                className={ tool === 'Setup' ? 'active' : ''}
-                onClick={() => {
-                  setTool('Setup');
-                  setExpanded(true);
-                  setHideSideBar(true);
-                }}
-              > Setup </button>
-              <button
-                className={ tool === 'Cut' ? 'active' : ''}
-                onClick={() => {
-                  setExpanded(true);
-                  setHideSideBar(true);
-                  setTool('Cut')
-                }}
-              > Cut </button>
-            </div>
-          </div>
-        </nav>
+        <NavBar 
+          tool={ tool } 
+          setTool={ setTool } 
+          setExpanded={ setExpanded } 
+          setHideSideBar={ setHideSideBar } 
+        />
 
         <div className="flex h-[91%]"> 
           { !hideSideBar && <SideNav tool={ tool } setTool={ setTool } setExpanded={ setExpanded } /> }
@@ -69,6 +39,47 @@ export default function Home() {
         </div>
       </section>
     </>
+  )
+}
+
+const NavBar = ({ tool, setTool, setExpanded, setHideSideBar, canvas }) => {
+  return (
+    <nav className="navbar h-[9%]">
+      <div className="px-16 w-full h-full flex justify-between items-center navDiv">
+        <h3 className="py-5">Kochun<span>D</span></h3>
+        <div className="buttonGroup px-[0.3rem] flex gap-4 items-center justify-around">
+          <button 
+            className={ tool !== 'Setup' && tool !== 'Cut' ? 'active' : ''}
+            onClick={() => {
+              setTool('Select');
+              setExpanded(true);
+              setHideSideBar(false);
+              canvas.getObjects()?.forEach((obj) => obj.set({
+                hasControls: true,
+                lockMovementX: false,
+                lockMovementY: false
+              }));
+            }}
+          > Editor </button>
+          <button 
+            className={ tool === 'Setup' ? 'active' : ''}
+            onClick={() => {
+              setTool('Setup');
+              setExpanded(true);
+              setHideSideBar(true);
+            }}
+          > Setup </button>
+          <button
+            className={ tool === 'Cut' ? 'active' : ''}
+            onClick={() => {
+              setExpanded(true);
+              setHideSideBar(true);
+              setTool('Cut')
+            }}
+          > Cut </button>
+        </div>
+      </div>
+    </nav>
   )
 }
 
