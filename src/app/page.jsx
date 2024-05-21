@@ -3,8 +3,11 @@ import React, { useState } from "react";
 import Sidebar, { SidebarItem } from "./components/sidebar";
 import { Boxes, CaseSensitiveIcon, CloudUpload, Group, MousePointer2Icon, PenLine, PenTool, Spline } from "lucide-react";
 import Container from "./components/container";
-import { Default, Elements, FreeDraw, Import, TextBox, Setup, Cut } from "./components/components";
+import { Default, Elements, FreeDraw, Import, TextBox,  Cut } from "./components/components";
 import { split, group, info } from "./components/canvasFunctions";
+import { Setup } from "./components/setup/setup";
+import { useCanvas } from "./context";
+import { fabric } from "fabric";
 
 export default function Home() {
   const [tool, setTool] = useState('Select');
@@ -42,7 +45,9 @@ export default function Home() {
   )
 }
 
-const NavBar = ({ tool, setTool, setExpanded, setHideSideBar, canvas }) => {
+const NavBar = ({ tool, setTool, setExpanded, setHideSideBar }) => {
+  const { canvas } = useCanvas();
+
   return (
     <nav className="navbar h-[9%]">
       <div className="px-16 w-full h-full flex justify-between items-center navDiv">
@@ -54,11 +59,31 @@ const NavBar = ({ tool, setTool, setExpanded, setHideSideBar, canvas }) => {
               setTool('Select');
               setExpanded(true);
               setHideSideBar(false);
-              canvas.getObjects()?.forEach((obj) => obj.set({
+              const objects = canvas.getObjects();
+              console.log(objects)
+              objects.forEach((obj) => {
+                console.log(obj)
+                obj.set({
+                  hasControls: true,
+                  lockMovementX: false,
+                  lockMovementY: false
+                })
+              })
+              // canvas.getObjects().forEach((obj) => {
+              //   obj.set({
+              //     hasControls: true,
+              //     lockMovementX: false,
+              //     lockMovementY: false
+              //   })
+              // });
+              fabric.util.object.extend(canvas.getObjects()[0], {
                 hasControls: true,
                 lockMovementX: false,
                 lockMovementY: false
-              }));
+              })
+
+              canvas.renderAll();
+              
             }}
           > Editor </button>
           <button 
