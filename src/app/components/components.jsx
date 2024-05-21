@@ -90,6 +90,7 @@ export function Import() {
 
 export const Cut = ({ jobSetUp, setJobSetup }) => {
     const textareaRef = useRef(null)
+    const gcodeRef = useRef(null)
     const [ port , setPort ] = useState(null);
     const [ writer, setWriter ] = useState(null);
     const [ reader, setReader ] = useState(null);
@@ -101,8 +102,38 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
     const [ index, setIndex ] = useState({jobIndex: 0, arrayIndex: 0});
     const [ isRunning, setIsRunning ] = useState(false);
     const array = [
-        {type: 'thru-cut', gcode: ['G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30','G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30','G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X10 Y10', 'G1 X20 Y20', 'G1 X30 Y30']},
-        {type: 'thru-cut', gcode: ['G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30','G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30','G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30', 'G1 X32 Y32', 'G1 X20 Y20', 'G1 X30 Y30']}
+        // {type: 'thru-cut', gcode: ['G01 X0Y0Z5.25', 'G01 X100Y100', 'G01 X100Y100Z0', 'G01 X100Y200', 'G01 X100Y200Z10.5', 'G01 X200Y200', 'G01 X200Y200Z21', 'G01 X200Y100', 'G01 X200Y100Z31.5', 'G01 X100Y100', 'G01 X100Y100Z25.75', 'G01 X0Y0', 'G01 X0Y0Z0']},
+        // {type: 'thru-cut', gcode: ['M10S90', 'M10S140', 'M03S1200', 'M03S1500']},
+        {
+            type: 'thru-cut', 
+            gcode: [
+                'G28',
+                'G00 X300Y20Z0', 
+                'M10S90', 
+                'G00 X300Y20Z25.5', 
+                'M10S140', 
+                'G00 X300Y20Z0', 
+                'G00 X221Y14Z0', 
+                'G00 X221Y14Z15', 
+                'G00 X221Y14Z0',
+                'G00 X43Y51Z0',
+                'M03 S1800',
+                'G00 X43Y51Z20',
+                'G01 X126Y51Z20F2000',
+                'G01 X126Y134Z20F2000',
+                'G01 X43Y134Z20F2000', 
+                'G01 X43Y51Z20F2000',
+                'G00 X43Y51Z0',
+                'M05',
+                // 'G28',
+                'G00 X330Y19.5Z0', 
+                'G00 X330Y19.5Z25.5',
+                'M10S90', 
+                'G00 X330Y19.5Z0', 
+                'M10S140', 
+                'G00 X0Y0Z0'
+            ]
+        },
     ];
 
     const processMsg = async () => {
@@ -121,7 +152,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
     const handleConnection = async () => {
         try {
             const newPort = await navigator.serial.requestPort();
-            await newPort.open({ baudRate: 9600 });
+            await newPort.open({ baudRate: 115200 });
             setPort(newPort);
             console.log('port', newPort)
             setWriter(newPort.writable.getWriter());
@@ -203,7 +234,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
     return (
         <div className="flex justify-between gap-8 flex-col h-full pb-6">
             <div className="mt-4 h-full bg-[#EBEBEB] cut">
-                <div className="w-full h-[10%] bg-[#081646ab] flex items-end justify-end gap-3 p-3">
+                <div className="w-full h-[10%] bg-[#1e263f] flex items-end justify-end gap-3 p-3">
                 <FileCog size={20} strokeWidth={2} color={'#ffffff'}  />
                     <ActivityIcon 
                         size={20} 
@@ -212,13 +243,27 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                         onClick={ () => { setResponse(prev => ({ ...prev, visible: !response.visible })) }} />
                 </div>
                 { response.visible ? 
-                    <div className="text-sm responses h-[90%]">
-                        <textarea ref={textareaRef} value={ response.message } ></textarea>
+                    <div className="text-sm responses h-[90%] relative">
+                        <textarea ref={textareaRef} defaultValue={ response.message } ></textarea>
+                        <div className="absolute w-full bottom-0 left-0 p-3">
+                            <input 
+                                ref={ gcodeRef }
+                                className="w-full bg-[#1e263f] p-2 border border-[#ffffff69] outline-none text-sm" 
+                                placeholder="Enter You G-Code here" 
+                                onKeyDown={ (e) => {
+                                    if (e.key === 'Enter') {
+                                        const value = gcodeRef.current.value;
+                                        sendToMachine(value)
+                                        gcodeRef.current.value = '';
+                                    }
+                                }}
+                            />
+                        </div>
                     </div>
                  : 
                     jobSetUp.map((item, index) => {
                         return (
-                            <div key={index} className={ `flex justify-between items-end py-1 px-3 border-b border-b-[#1c274c28] hover:bg-[#d6d6d6ab]` } >
+                            <div key={index} className={ `flex justify-between items-end py-1 px-3 border-b border-b-[#1c274c28] hover:bg-[#d6d6d6ab] ${ item.selected ? ' opacity-100' : 'opacity-50'}` } >
                                 <p className="font-['MarryWeatherSansRegular'] text-[13px]">{ item.name }</p>
                                 <div className="flex gap-3 py-1">
                                     <Trash2 
@@ -239,7 +284,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                     <button 
                         className="p-3 bg-[#1C274C] rounded"
                         onClick={ () => {
-                            sendToMachine(`G01 X${controllers.x} Y${controllers.y}`);
+                            sendToMachine(`G00 X${controllers.x} Y${controllers.y}`);
                             setControllers({...controllers, y: controllers.y + 10});
                         }}
                         >
@@ -249,7 +294,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                         <button 
                             className="p-3 bg-[#1C274C] rounded"
                             onClick={ () => {
-                                sendToMachine(`G01 X${controllers.x} Y${controllers.y}`);
+                                sendToMachine(`G00 X${controllers.x} Y${controllers.y}`);
                                 setControllers({...controllers, x: (controllers.x - 10) < 0 ? 0 : controllers.x - 10});
                             }}>
                             <ChevronLeft size={20} strokeWidth={4} color={'#F5762E'}/>
@@ -262,7 +307,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                         <button 
                             className="p-3 bg-[#1C274C] rounded"
                             onClick={ () => {
-                                sendToMachine(`G01 X${controllers.x} Y${controllers.y}`);
+                                sendToMachine(`G00 X${controllers.x} Y${controllers.y}`);
                                 setControllers({...controllers, x: controllers.x + 10});
                             }}>
                             <ChevronRight size={20} strokeWidth={4} color={'#F5762E'}/>
@@ -271,7 +316,7 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                     <button 
                         className="p-3 bg-[#1C274C] rounded"
                         onClick={ () => {
-                            sendToMachine(`G01 X${controllers.x} Y${controllers.y}`);
+                            sendToMachine(`G00 X${controllers.x} Y${controllers.y}`);
                             setControllers({...controllers, y: (controllers.y - 10) < 0 ? 0 : controllers.y - 10});
                         }}>
                         <ChevronDown size={20} strokeWidth={4} color={'#F5762E'}/>
