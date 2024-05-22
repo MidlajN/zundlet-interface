@@ -1,3 +1,4 @@
+
 /**
  * Handles the uploaded file, loads SVG content, and adds it to the canvas.
  *
@@ -29,7 +30,7 @@ export const handleFile = (file, canvas) => {
  *
  * @return {void} No return value
  */
-export const split = () => {
+export const split = (canvas) => {
     const activeObject = canvas.getActiveObject();
     if (!activeObject || activeObject.get('type') === 'activeSelection') return;
     
@@ -89,7 +90,7 @@ export const split = () => {
 /**
  * Function to group selected objects together.
  */
-export const group = () => {
+export const group = (canvas) => {
     const activeObject = canvas.getActiveObject();
     if (!activeObject || activeObject.get('type') !== 'activeSelection') return;
     activeObject.toGroup();
@@ -102,7 +103,7 @@ export const group = () => {
  *
  * @param {Function} setCopiedObject - A function to set the copied object.
  */
-export const copyObject = (setCopiedObject) => {
+export const copyObject = (setCopiedObject, canvas) => {
     const activeObject = canvas.getActiveObject();
     if (activeObject) {
         activeObject.clone((clonedObject) => {
@@ -121,7 +122,8 @@ export const copyObject = (setCopiedObject) => {
  * @param {Object} copiedObject - The object to be pasted.
  * @return {void} 
  */
-export const pasteObject = (copiedObject) => {
+export const pasteObject = (copiedObject, canvas) => {
+
     if (copiedObject) {
         copiedObject.clone((clonedObject) => {
 
@@ -129,21 +131,7 @@ export const pasteObject = (copiedObject) => {
             left: clonedObject.left + 10,
             top: clonedObject.top + 10,
             evented: true,
-        });const handleKeyDown = (e) => {
-            if (e.ctrlKey && e.key === 'c') {
-                copyObject(setCopiedObject);
-            } else if (e.ctrlKey && e.key === 'v') {
-                pasteObject(copiedObject);
-            } else if (e.key === 'Delete') {
-                deleteObject();
-            } else if (e.ctrlKey && e.key === 'a') {
-                selectAllObject();
-                e.preventDefault();
-            } else if (e.ctrlKey && e.key === 'g') {
-                group();
-                e.preventDefault();
-            }
-        };
+        });
 
         if (clonedObject.get('type') === 'activeSelection') {
             clonedObject.forEachObject((obj) => {
@@ -166,7 +154,8 @@ export const pasteObject = (copiedObject) => {
 /**
  * Deletes the active object on the canvas if present.
  */
-export const deleteObject = () => {
+export const deleteObject = (canvas) => {
+
     const activeObject = canvas.getActiveObject();
     if (activeObject) {
         if (activeObject.get('type') === 'activeSelection') {
@@ -185,7 +174,8 @@ export const deleteObject = () => {
 /**
  * A function to select all objects on the canvas.
  */
-export const selectAllObject = () => {
+export const selectAllObject = (canvas) => {
+
     canvas.discardActiveObject();
     const selection = new fabric.ActiveSelection(canvas.getObjects(), { canvas: canvas });
     canvas.setActiveObject(selection);
@@ -193,18 +183,18 @@ export const selectAllObject = () => {
 }
 
 
-export const handleKeyDown = ( copiedObject, setCopiedObject ) => (e) => {
+export const handleKeyDown = ( copiedObject, setCopiedObject, canvas ) => (e) => {
     if (e.ctrlKey && e.key === 'c') {
-        copyObject(setCopiedObject);
+        copyObject(setCopiedObject, canvas);
     } else if (e.ctrlKey && e.key === 'v') {
-        pasteObject(copiedObject);
+        pasteObject(copiedObject, canvas);
     } else if (e.key === 'Delete') {
-        deleteObject();
+        deleteObject(canvas);
     } else if (e.ctrlKey && e.key === 'a') {
-        selectAllObject();
+        selectAllObject(canvas);
         e.preventDefault();
     } else if (e.ctrlKey && e.key === 'g') {
-        group();
+        group(canvas);
         e.preventDefault();
     } 
 };

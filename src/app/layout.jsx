@@ -1,7 +1,8 @@
 
+import React from "react";
+import { CanvasProvider } from "./context";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { CanvasProvider } from "./context";
 
 const inter = Inter({ subsets: ["latin"] });
 

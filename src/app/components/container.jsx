@@ -3,7 +3,7 @@ import { fabric } from "fabric";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { handleFile, handleKeyDown } from "./canvasFunctions";
 import './components.css';
-import { useCanvas } from "../context";
+import  useCanvas  from "../context";
 
 export default function Container({ children, expanded, setExpanded }) {
     const { 

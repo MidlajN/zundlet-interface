@@ -1,13 +1,13 @@
 'use client'
 import React, { useState } from "react";
+import useCanvas from "./context";
 import Sidebar, { SidebarItem } from "./components/sidebar";
 import { Boxes, CaseSensitiveIcon, CloudUpload, Group, MousePointer2Icon, PenLine, PenTool, Spline } from "lucide-react";
 import Container from "./components/container";
 import { Default, Elements, FreeDraw, Import, TextBox,  Cut } from "./components/components";
 import { split, group, info } from "./components/canvasFunctions";
 import { Setup } from "./components/setup/setup";
-import { useCanvas } from "./context";
-import { fabric } from "fabric";
+
 
 export default function Home() {
   const [tool, setTool] = useState('Select');
@@ -46,7 +46,6 @@ export default function Home() {
 }
 
 const NavBar = ({ tool, setTool, setExpanded, setHideSideBar }) => {
-  const { canvas } = useCanvas();
 
   return (
     <nav className="navbar h-[9%]">
@@ -58,32 +57,7 @@ const NavBar = ({ tool, setTool, setExpanded, setHideSideBar }) => {
             onClick={() => {
               setTool('Select');
               setExpanded(true);
-              setHideSideBar(false);
-              const objects = canvas.getObjects();
-              console.log(objects)
-              objects.forEach((obj) => {
-                console.log(obj)
-                obj.set({
-                  hasControls: true,
-                  lockMovementX: false,
-                  lockMovementY: false
-                })
-              })
-              // canvas.getObjects().forEach((obj) => {
-              //   obj.set({
-              //     hasControls: true,
-              //     lockMovementX: false,
-              //     lockMovementY: false
-              //   })
-              // });
-              fabric.util.object.extend(canvas.getObjects()[0], {
-                hasControls: true,
-                lockMovementX: false,
-                lockMovementY: false
-              })
-
-              canvas.renderAll();
-              
+              setHideSideBar(false);   
             }}
           > Editor </button>
           <button 
@@ -109,6 +83,7 @@ const NavBar = ({ tool, setTool, setExpanded, setHideSideBar }) => {
 }
 
 const SideNav = ({ tool, setTool, setExpanded }) => {
+  const { canvas } = useCanvas();
   return (
     <Sidebar>
       <SidebarItem 
@@ -129,7 +104,7 @@ const SideNav = ({ tool, setTool, setExpanded }) => {
         text={'Group'} 
         setTool={setTool}
         setExpanded={setExpanded}
-        canvasFunction={group}
+        canvasFunction={ () => group(canvas) }
       />
       <SidebarItem 
         // eslint-disable-next-line @next/next/no-img-element
@@ -137,7 +112,7 @@ const SideNav = ({ tool, setTool, setExpanded }) => {
         text={'Split'} 
         setTool={setTool} 
         setExpanded={setExpanded}
-        canvasFunction={split}
+        canvasFunction={ () => split(canvas) }
       />
       <SidebarItem 
         icon={ <Spline size={25} strokeWidth={1.5} color={ tool === 'Curves' ? '#F5762E' : '#4b5563'} /> } 

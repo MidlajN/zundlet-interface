@@ -1,12 +1,14 @@
 'use client';
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import React,{ createContext, useContext, useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 import { handleKeyDown } from "./components/canvasFunctions";
 
 const CanvasContext = createContext(null);
 
-export const useCanvas = () => useContext(CanvasContext);
+export default function useCanvas() {
+    return useContext(CanvasContext);
+}
 
 export const CanvasProvider = ({ children }) => {
     const canvasRef = useRef(null);
@@ -67,7 +69,7 @@ export const CanvasProvider = ({ children }) => {
     }, [objectValues]);
 
     useEffect(() => {
-        window.addEventListener('keydown', handleKeyDown( copiedObject, setCopiedObject ));
+        window.addEventListener('keydown', handleKeyDown( copiedObject, setCopiedObject, canvas ));
         return () => { 
             window.removeEventListener('keydown', handleKeyDown) 
         };
@@ -77,5 +79,5 @@ export const CanvasProvider = ({ children }) => {
         <CanvasContext.Provider value={{ canvas, canvasRef, objectValues, setObjectValues, copiedObject, setCopiedObject }}>
             { children }
         </CanvasContext.Provider>
-    )
-}
+    );
+};

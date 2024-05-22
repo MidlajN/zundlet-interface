@@ -1,10 +1,10 @@
-import { useCanvas } from "@/app/context";
+
 import React, { useEffect, useState } from "react";
+import useCanvas from "@/app/context";
 import { Files, ArrowUpNarrowWide, ArrowDownNarrowWide, Plus, Eye, EyeOff, Trash2, Settings2  } from "lucide-react";
 import { SetupModal } from "./modal";
+import { deleteObject } from "../canvasFunctions";
 
-import ReactModal from "react-modal";
-ReactModal.setAppElement('#main');
 
 export function Setup({ jobSetUp, setJobSetup }) {
     const { canvas } = useCanvas();
@@ -16,38 +16,37 @@ export function Setup({ jobSetUp, setJobSetup }) {
     
     useEffect(() => {
         if (!canvas) return;
+        const handleRightClick = (event) => { 
+            if (event.button === 3) setRightClickEvent(event); 
+        }
 
         canvas.on('mouse:down', (e) => {
-            const handleRightClick = (event) => { if (event.button === 3) setRightClickEvent(event); }
-            
-            const activeObject = canvas.getActiveObject();
-            
-            if (activeObject) { 
-                console.log('active Ovject :: ', activeObject)
-                activeObject.set({
+
+            canvas.getObjects().forEach((obj) => {
+                obj.on('mousedown', handleRightClick);
+                obj.set({
                     hasControls: false,
                     lockMovementX: true,
                     lockMovementY: true
                 })
-                canvas.renderAll();
-                activeObject.on('mousedown', handleRightClick); 
-            } 
+            })
 
-            setRightClickEvent(null);
-            return () => {
-                console.log('COmponents umounted')
-                if (activeObject) {
-                    activeObject.off('mousedown');
-                    activeObject.set({
-                        hasControls: true,
-                        lockMovementX: false,
-                        lockMovementY: false
-                    })
-                    canvas.renderAll();
-                }
-            }
-        })
-    },[canvas])
+            setRightClickEvent(null); 
+        });
+
+        return () => {
+            canvas.off('mouse:down')
+            canvas.getObjects().forEach((obj) => {
+                obj.off('mousedown')
+                obj.set({
+                    hasControls: true,
+                    lockMovementX: false,
+                    lockMovementY: false
+                })
+            })
+            canvas.renderAll();
+        }
+    },[])
      
     return (
         <>
@@ -186,9 +185,10 @@ export function Setup({ jobSetUp, setJobSetup }) {
     )
 }
 const CustomComponent = ({ event, setEvent, setModalOpen }) => {
+    const { canvas } = useCanvas();
 
     const deleteElement = () => {
-        deleteObject();
+        deleteObject(canvas);
         setEvent(null);
     }
 
