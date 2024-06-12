@@ -2,7 +2,7 @@
 
 import React,{ createContext, useContext, useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
-import { handleKeyDown } from "./components/canvasFunctions";
+import { handleKeyDown } from "./components/editor/functions";
 
 const CanvasContext = createContext(null);
 

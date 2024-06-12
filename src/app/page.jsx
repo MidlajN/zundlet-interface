@@ -4,8 +4,9 @@ import useCanvas from "./context";
 import Sidebar, { SidebarItem } from "./components/sidebar";
 import { Boxes, CaseSensitiveIcon, CloudUpload, Group, MousePointer2Icon, PenLine, PenTool, Spline } from "lucide-react";
 import Container from "./components/container";
-import { Default, Elements, FreeDraw, Import, TextBox,  Cut } from "./components/components";
-import { split, group, info } from "./components/canvasFunctions";
+import { Default, Elements, FreeDraw, Import, TextBox } from "./components/editor/editor";
+import { Cut } from "./components/cut/cut";
+import { split, group, info } from "./components/editor/functions";
 import { Setup } from "./components/setup/setup";
 
 

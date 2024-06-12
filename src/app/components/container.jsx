@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import { fabric } from "fabric";
+import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { handleFile, handleKeyDown } from "./canvasFunctions";
-import './components.css';
+import { handleFile } from "./editor/functions";
+import './container.css';
 import  useCanvas  from "../context";
 
 export default function Container({ children, expanded, setExpanded }) {

@@ -3,8 +3,9 @@ import React, { useEffect, useState } from "react";
 import useCanvas from "@/app/context";
 import { Files, ArrowUpNarrowWide, ArrowDownNarrowWide, Plus, Eye, EyeOff, Trash2, Settings2  } from "lucide-react";
 import { SetupModal } from "./modal";
-import { deleteObject } from "../canvasFunctions";
-
+// import { deleteObject } from "../canvasFunctions";
+import { deleteObject } from "../editor/functions";
+import './setup.css'
 
 export function Setup({ jobSetUp, setJobSetup }) {
     const { canvas } = useCanvas();

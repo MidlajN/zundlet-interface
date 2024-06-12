@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import { 
-    CloudUpload, 
     Trash2, 
     ChevronLeft,
     ChevronRight,
@@ -13,66 +12,7 @@ import {
     ActivityIcon,
     FileCog,
 } from "lucide-react";
-import './components.css'
-
-export function Default() {
-    return (
-        <div>Default</div>
-    )
-}
-
-export function Elements() {
-    return (
-        <div>Elements</div>
-    )
-}
-
-export function FreeDraw() {
-    return (
-        <div>CurvedLines</div>
-    )
-}
-
-export function TextBox() {
-    return (
-        <div>TextBox</div>
-    )
-}
-
-export function Import() {
-    const handleFile = (file) => {
-        if (file.type !== 'image/svg+xml') return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const svg = e.target.result;
-            fabric.loadSVGFromString(svg, (objects, options) => {
-                const svgObj = fabric.util.groupSVGElements(objects, options);
-                svgObj.set({ selectable: true, hasControls: true });
-                canvas.add(svgObj);
-                canvas.renderAll();
-            })
-        }
-        reader.readAsText(file);
-    }
-
-    return (
-        <div onDragOver={ e => { e.preventDefault(); }} onDrop={ e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]) } }>
-            <div className="border-b-2 border-[#1c274c1c] py-1">
-                <h3>Upload SVG</h3>
-            </div>
-            <div className="py-4">
-                <p className="text-[13px] text-slate-600">Upload an SVG file by clicking below. Make sure the SVG file contains valid vector graphics that you want to work with.</p>
-                <div className="svgImport">
-                    <CloudUpload size={70} strokeWidth={1} color={'#a7a7a7'}/>
-                    <p>Drag & Drop Files <br /> or Click to Browse</p>
-                    <input type="file" onChange={ e => handleFile(e.target.files[0]) } />
-                    <span>.svg files only</span>
-                </div>
-            </div>
-        </div>
-    )
-}
+import './cut.css';
 
 
 export const Cut = ({ jobSetUp, setJobSetup }) => {
@@ -329,15 +269,15 @@ export const Cut = ({ jobSetUp, setJobSetup }) => {
                 </div>
 
                 <div className="flex justify-between w-full">
-                    <button className="flex items-center justify-center gap-1 bg-[#027200] py-1 px-6 rounded" onClick={ handleJob }>
-                        <span className="text-[#FFFFFF] font-['MarryWeatherSans'] text-[14px] tracking-wide"> Start Job</span>
+                    <button className="flex items-center justify-center gap-1 bg-[#027200] py-1 px-5 rounded text-nowrap"  onClick={ handleJob }>
+                        <span className="text-[#FFFFFF] font-['MarryWeatherSans'] text-[12px] tracking-wide"> Start Job</span>
                     </button>
-                    <button className="flex items-center justify-center gap-1 bg-[#1C274C] py-1 px-6 rounded" onClick={ () => { setPause(!pause) }}>
+                    <button className="flex items-center justify-center gap-1 bg-[#1C274C] py-1 px-5 rounded" onClick={ () => { setPause(!pause) }}>
                         <Pause size={18} strokeWidth={2} fill="#FFFFFF" color="#FFFFFF" /> 
                         <span className="text-[#FFFFFF] font-['MarryWeatherSans'] text-[14px] tracking-wide"> Pause</span>
                     </button>
                     <button 
-                        className="flex items-center justify-center gap-1 bg-[#BE0A0A] py-1 px-6 rounded-full"  
+                        className="flex items-center justify-center gap-1 bg-[#BE0A0A] py-1 px-5 rounded-full"  
                         onClick={ () => {
                             setIsRunning(false);
                             setIndex({jobIndex: 0, arrayIndex: 0});
