@@ -1,4 +1,5 @@
 import { CloudUpload } from "lucide-react";
+import useCanvas from "@/app/context";
 import './editor.css';
 
 
@@ -28,6 +29,7 @@ export function TextBox() {
 }
 
 export function Import() {
+    const { canvas } = useCanvas();
     const handleFile = (file) => {
         if (file.type !== 'image/svg+xml') return;
 

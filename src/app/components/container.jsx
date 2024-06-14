@@ -3,8 +3,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { handleFile } from "./editor/functions";
 import './container.css';
 import  useCanvas  from "../context";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
-export default function Container({ children, expanded, setExpanded }) {
+export default function Container({ children, expanded, setExpanded, hideSideBar }) {
     const { 
         canvas, 
         canvasRef, 
@@ -12,16 +13,29 @@ export default function Container({ children, expanded, setExpanded }) {
     } = useCanvas();
 
     return (
-        <section className="h-full w-full flex canvas-section relative ">
-            <div className={`canvas ${ expanded ? 'w-[80%]' : 'w-[100%]' } relative transition-all duration-500`}>
-                <div className="machine-outer">
-                    <div className="machine-inner relative"
-                        onDrop={ e => { e.preventDefault(); handleFile(e.dataTransfer.files[0], canvas) } } 
-                        onDragOver={ e => { e.preventDefault(); } }
+        <section className={`h-full ${ hideSideBar ? 'w-full' : 'w-[97%]' } flex canvas-section relative overflow-hidden`}>
+            <div className={`canvas ${ expanded ? 'w-[80%]' : 'w-[100%]' } relative overflow-hidden transition-all duration-500`}>
+                <TransformWrapper
+                    initialScale={.1} 
+                    maxScale={1}
+                    minScale={.1} 
+                    limitToBounds={ false }
+                    // initialPositionX={'1px'}
+                >
+                    <TransformComponent
+                        contentStyle={{  margin:'auto'}} 
+                        wrapperStyle={{  width: '100%', height: '100%', overflow:'visible', display:'flex', left:'5rem', top:'5rem' }}
                     >
-                        <canvas ref={ canvasRef }></canvas>
-                    </div>
-                </div>
+                        <div className="machine-outer">
+                            <div className="machine-inner relative"
+                                onDrop={ e => { e.preventDefault(); handleFile(e.dataTransfer.files[0], canvas) } } 
+                                onDragOver={ e => { e.preventDefault(); } }
+                            >
+                                <canvas ref={ canvasRef } ></canvas>
+                            </div>
+                        </div>
+                   </TransformComponent>
+                </TransformWrapper>
 
                 <button onClick={() => setExpanded(!expanded)}>{ expanded ? <ChevronRight size={30} color="#F5762E" /> : <ChevronLeft size={30} color="#F5762E" /> }</button>
             </div>

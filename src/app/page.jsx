@@ -29,7 +29,7 @@ export default function Home() {
         <div className="flex h-[91%]"> 
           { !hideSideBar && <SideNav tool={ tool } setTool={ setTool } setExpanded={ setExpanded } /> }
 
-          <Container expanded={ expanded } setExpanded={ setExpanded }>
+          <Container expanded={ expanded } setExpanded={ setExpanded } hideSideBar={ hideSideBar }>
             <div className={ `h-full py-5 px-5 transition-all ${ expanded ? 'opacity-100 duration-[2s]' : 'opacity-0'}`}>
               { tool === 'Select' && <Default /> }
               { tool === 'Elements' && <Elements /> }

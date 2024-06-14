@@ -23,8 +23,8 @@ export const CanvasProvider = ({ children }) => {
         fabric.Object.prototype.cornerSize = 12;
 
         const fabricCanvas = new fabric.Canvas(canvasRef.current, {
-            width: 800,
-            height: 500,
+            width: fabric.util.parseUnit('250cm'),
+            height: fabric.util.parseUnit('150cm'),
             backgroundColor: "white",
             fireRightClick: true,
             stopContextMenu: true
